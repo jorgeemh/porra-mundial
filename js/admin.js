@@ -21,14 +21,12 @@
         p_usuario_id: sesion.id, p_token: sesion.token, p_partidos: arr
       });
       if (error) throw error;
-      // Actualiza fecha límite global
       await sb.from("config").update({ valor: j.fecha_limite_grupos }).eq("clave","fecha_limite_grupos");
       ok("Calendario cargado ✅");
       await refrescar();
     } catch (e) { mostrarError(e.message); }
   };
 
-  // ---------- Carga de datos ----------
   let partidos = [], usuarios = [];
   async function refrescar() {
     const [p, u] = await Promise.all([
@@ -39,7 +37,6 @@
     renderGrupos(); renderElim(); renderUsuarios();
   }
 
-  // ---------- 2) Resultados grupos ----------
   function renderGrupos() {
     const grupos = partidos.filter(p => p.fase === "grupos");
     if (grupos.length === 0) { $("#lista-grupos").innerHTML = "<p>Carga primero el calendario.</p>"; return; }
@@ -74,7 +71,6 @@
     });
   }
 
-  // ---------- 3) Generar bracket ----------
   $("#btn-generar-bracket").onclick = async () => {
     limpiarError();
     try {
@@ -87,20 +83,13 @@
           "Faltan resultados", { okText: "Generar igualmente", peligro: true });
         if (!ok) return;
       }
-
-      // 1. Calcular clasificaciones por grupo
       const tabla = calcularClasificaciones(partidosGrupos);
-      // 2. Determinar 8 mejores terceros
       const terceros = elegirMejoresTerceros(tabla);
-      // 3. Resolver slots → equipo
       const slotEquipo = resolverSlots(tabla, terceros);
-
-      // 4. Construir partidos del bracket
       const fechas = window.PORRA_CONFIG.FECHAS_ELIM || {};
       const nuevosPartidos = [];
       const propagaciones = [];
       let orden = 1000;
-
       for (const m of j.r32) {
         nuevosPartidos.push({
           id: m.id, fase: "r32",
@@ -110,8 +99,6 @@
           orden: orden++
         });
       }
-      // Propagaciones R32 → R16: por slot a/b según from_a/from_b
-      const propsR16 = {};
       for (const m of j.r16) {
         propagaciones.push({ from: m.from_a, slot: "a", to: m.id });
         propagaciones.push({ from: m.from_b, slot: "b", to: m.id });
@@ -132,7 +119,6 @@
         propagaciones.push({ from: m.from_b, slot: "b", to: m.id });
         nuevosPartidos.push({ id: m.id, fase: "final", equipo_a: null, equipo_b: null, fecha_hora: fechas[m.id] || null, orden: orden++ });
       }
-
       const { error } = await sb.rpc("admin_generar_eliminatorias", {
         p_usuario_id: sesion.id, p_token: sesion.token,
         p_partidos_bracket: nuevosPartidos, p_propagaciones: propagaciones
@@ -144,7 +130,6 @@
   };
 
   function calcularClasificaciones(matches) {
-    // Devuelve { [grupo]: [{equipo, pj, g, e, p, gf, gc, dg, pts}] ordenado }
     const equipos = {};
     for (const m of matches) {
       const g = m.grupo;
@@ -174,7 +159,6 @@
   }
 
   function elegirMejoresTerceros(tabla) {
-    // Toma el 3º de cada grupo y ordena por (pts, dg, gf). Devuelve los 8 mejores.
     const terceros = Object.entries(tabla)
       .map(([g, arr]) => ({ grupo: g, ...arr[2] }))
       .filter(t => t.equipo)
@@ -193,7 +177,6 @@
     return m;
   }
 
-  // ---------- 4) Resultados eliminatorias ----------
   function renderElim() {
     const elim = partidos.filter(p => p.fase !== "grupos");
     if (elim.length === 0) { $("#lista-elim").innerHTML = "<p>Aún no hay bracket.</p>"; return; }
@@ -231,7 +214,6 @@
     });
   }
 
-  // ---------- 5) Bloquear bracket ----------
   $("#btn-bloquear").onclick = async () => {
     const c = await Modal.confirm("Tras esto nadie podrá cambiar su cuadro eliminatorio.", "¿Bloquear bracket?", { okText: "Bloquear", peligro: true });
     if (!c) return;
@@ -239,7 +221,6 @@
     if (error) mostrarError(error.message); else ok("Bracket bloqueado 🔒");
   };
 
-  // ---------- 6) Usuarios ----------
   function renderUsuarios() {
     $("#lista-usuarios").innerHTML = `
       <table class="tabla-detalle">
@@ -270,6 +251,26 @@
       if (error) mostrarError(error.message); else { ok("Cambiado"); await refrescar(); }
     });
   }
+
+  // ---------- 🧪 Modo prueba ----------
+  $("#btn-test-grupos").onclick = async () => {
+    const c = await Modal.confirm("Rellenará con goles aleatorios todos los partidos de grupos sin resultado.", "¿Rellenar grupos al azar?", { okText: "Rellenar" });
+    if (!c) return;
+    const { error } = await sb.rpc("admin_rellenar_grupos_random", { p_usuario_id: sesion.id, p_token: sesion.token });
+    if (error) mostrarError(error.message); else { ok("Grupos rellenados 🎲"); await refrescar(); }
+  };
+  $("#btn-test-elim").onclick = async () => {
+    const c = await Modal.confirm("Pondrá un ganador aleatorio a cada eliminatoria abierta y propagará al siguiente.", "¿Rellenar eliminatorias al azar?", { okText: "Rellenar" });
+    if (!c) return;
+    const { error } = await sb.rpc("admin_rellenar_elim_random", { p_usuario_id: sesion.id, p_token: sesion.token });
+    if (error) mostrarError(error.message); else { ok("Eliminatorias rellenadas 🎲"); await refrescar(); }
+  };
+  $("#btn-test-reset").onclick = async () => {
+    const c = await Modal.confirm("⚠️ Borrará TODOS los pronósticos y resultados, y dejará la BD lista para empezar el Mundial.", "¿Reset TOTAL?", { okText: "Sí, borrar todo", peligro: true });
+    if (!c) return;
+    const { error } = await sb.rpc("admin_reset_todo", { p_usuario_id: sesion.id, p_token: sesion.token });
+    if (error) mostrarError(error.message); else { ok("Todo reseteado ♻️"); await refrescar(); }
+  };
 
   await refrescar();
 })();

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porra Mundial 2026</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .tabs {
+    display: flex; gap: 4px; background: var(--surface-2);
+    padding: 4px; border-radius: 14px; margin-bottom: 20px;
+  }
+  .tab {
+    flex: 1; padding: 10px; text-align: center; font-weight: 600;
+    border-radius: 10px; cursor: pointer; color: var(--text-dim);
+    font-size: .95rem; transition: all .2s; user-select: none;
+  }
+  .tab.activo { background: #fff; color: var(--text); box-shadow: var(--shadow-sm); }
+  .hero {
+    text-align: center; margin-bottom: 24px;
+  }
+  .hero .ball { font-size: 3rem; display: block; line-height: 1; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<main class="container">
+  <div class="hero">
+    <span class="ball">⚽</span>
+    <h1>Porra Mundial 2026</h1>
+    <p class="sub">Pronostica con tus amigos. ¡Que gane el mejor!</p>
+  </div>
+
+  <div id="error" class="error" style="display:none"></div>
+
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <div class="tab activo" id="tab-login" role="tab">🔓 Ya tengo cuenta</div>
+      <div class="tab" id="tab-registro" role="tab">✨ Soy nuevo</div>
+    </div>
+
+    <p id="explicacion-modo" class="sub" style="text-align:center; margin-bottom:18px"></p>
+
+    <form id="form-auth">
+      <label>Tu nombre
+        <input type="text" id="nombre" required minlength="2" maxlength="30" autocomplete="off" placeholder="Ej: Jorge">
+      </label>
+      <label>PIN (4 dígitos)
+        <input type="password" id="pin" required pattern="[0-9]{4}" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="••••">
+      </label>
+      <button type="submit" id="btn-submit" style="width:100%; margin-top:8px">Entrar</button>
+    </form>
+  </div>
+
+  <p class="hint" id="hint-final">¿Primera vez? Pulsa la pestaña <b>✨ Soy nuevo</b> para crear tu cuenta.</p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/modal.js"></script>
+<script>
+let modo = "login";  // "login" | "registrar"
+const tabLogin = $("#tab-login");
+const tabReg = $("#tab-registro");
+const btnSubmit = $("#btn-submit");
+const explic = $("#explicacion-modo");
+const hint = $("#hint-final");
+
+function actualizarUI() {
+  const esLogin = modo === "login";
+  tabLogin.classList.toggle("activo", esLogin);
+  tabReg.classList.toggle("activo", !esLogin);
+  btnSubmit.textContent = esLogin ? "Entrar" : "Crear mi cuenta";
+  explic.textContent = esLogin
+    ? "Introduce tu nombre y PIN para volver a entrar."
+    : "Elige un nombre y un PIN de 4 dígitos. Apúntate el PIN, lo usarás siempre para entrar.";
+  hint.innerHTML = esLogin
+    ? '¿Primera vez? Pulsa la pestaña <b>✨ Soy nuevo</b> para crear tu cuenta.'
+    : '¿Ya tienes cuenta? Pulsa <b>🔓 Ya tengo cuenta</b>.';
+  limpiarError();
+}
+
+tabLogin.onclick = () => { modo = "login"; actualizarUI(); };
+tabReg.onclick = () => { modo = "registrar"; actualizarUI(); };
+actualizarUI();
+
+document.getElementById("form-auth").addEventListener("submit", e => { e.preventDefault(); accion(); });
+
+async function accion() {
+  limpiarError();
+  const nombre = $("#nombre").value.trim();
+  const pin = $("#pin").value.trim();
+  if (!nombre || nombre.length < 2) { mostrarError("Pon tu nombre (mínimo 2 letras)."); $("#nombre").focus(); return; }
+  if (!/^[0-9]{4}$/.test(pin)) { mostrarError("El PIN debe tener exactamente 4 dígitos."); $("#pin").focus(); return; }
+
+  const textoOriginal = btnSubmit.innerHTML;
+  btnSubmit.disabled = true;
+  $("#nombre").disabled = true; $("#pin").disabled = true;
+  btnSubmit.innerHTML = `<span class="loading"></span> ${modo === "login" ? "Entrando…" : "Creando cuenta…"}`;
+
+  const { data, error } = await sb.rpc(modo, { p_nombre: nombre, p_pin: pin });
+
+  if (error) {
+    mostrarError(error.message);
+    btnSubmit.disabled = false;
+    $("#nombre").disabled = false; $("#pin").disabled = false;
+    btnSubmit.innerHTML = textoOriginal;
+    return;
+  }
+
+  const fila = Array.isArray(data) ? data[0] : data;
+  Sesion.guardar({ id: fila.usuario_id, token: fila.session_token, nombre, es_admin: fila.es_admin });
+
+  const ov = document.createElement("div");
+  ov.className = "modal-backdrop";
+  ov.innerHTML = `
+    <div class="modal" style="text-align:center">
+      <div style="font-size:2.6rem; margin-bottom:8px">⚽🎉</div>
+      <h3>${modo === "login" ? `¡Hola de nuevo, ${nombre}!` : `¡Bienvenido, ${nombre}!`}</h3>
+      <p>${modo === "login" ? "Entrando a tu porra…" : "Cuenta creada. Llevándote a tus pronósticos…"}</p>
+      <span class="loading" style="width:26px;height:26px;border-width:3px"></span>
+    </div>`;
+  document.body.appendChild(ov);
+  setTimeout(() => window.location.href = "pronosticos.html", 900);
+}
+
+if (Sesion.cargar()) window.location.href = "pronosticos.html";
+</script>
+</body>
+</html>

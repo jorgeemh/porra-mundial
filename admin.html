@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Porra Mundial 2026</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <span id="usuario-nombre"></span>
+    <nav>
+      <a href="pronosticos.html">Pronósticos</a>
+      <a href="clasificacion.html">Clasificación</a>
+      <a href="admin.html" class="activo">Admin</a>
+      <a href="#" id="btn-salir">Salir</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div id="error" class="error" style="display:none"></div>
+  <div id="ok" class="ok" style="display:none"></div>
+
+  <section class="card">
+    <h2>1) Cargar calendario</h2>
+    <p class="sub">Sube el archivo <code>data/partidos.json</code> con el calendario actual. Útil al principio y si cambias fechas.</p>
+    <button id="btn-cargar-calendario">Cargar partidos.json en la base de datos</button>
+  </section>
+
+  <section class="card">
+    <h2>2) Resultados de la fase de grupos</h2>
+    <div id="lista-grupos">Cargando…</div>
+  </section>
+
+  <section class="card">
+    <h2>3) Generar eliminatorias</h2>
+    <p class="sub">Cuando todos los partidos de grupos tengan resultado, pulsa este botón para calcular clasificaciones, elegir los 8 mejores terceros y crear el cuadro de dieciseisavos.</p>
+    <button id="btn-generar-bracket">Generar cuadro eliminatorio</button>
+  </section>
+
+  <section class="card">
+    <h2>4) Resultados de eliminatorias</h2>
+    <div id="lista-elim">—</div>
+  </section>
+
+  <section class="card">
+    <h2>5) Bloquear bracket</h2>
+    <p class="sub">Pulsa cuando esté a punto de empezar el primer partido de dieciseisavos. Tras esto, nadie podrá cambiar su cuadro.</p>
+    <button id="btn-bloquear">Bloquear bracket</button>
+  </section>
+
+  <section class="card">
+    <h2>6) Gestionar usuarios</h2>
+    <div id="lista-usuarios"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/teams.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

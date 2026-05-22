@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clasificación · Porra Mundial 2026</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <span id="usuario-nombre"></span>
+    <nav>
+      <a href="pronosticos.html">Pronósticos</a>
+      <a href="clasificacion.html" class="activo">Clasificación</a>
+      <a href="admin.html" id="link-admin" style="display:none">Admin</a>
+      <a href="#" id="btn-salir">Salir</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div id="error" class="error" style="display:none"></div>
+
+  <section class="card">
+    <h2>Clasificación general</h2>
+    <table class="tabla-clasif">
+      <thead><tr><th>#</th><th>Nombre</th><th>Aciertos</th><th>Puntos</th></tr></thead>
+      <tbody id="tabla-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Detalle por persona</h2>
+    <label>Ver pronósticos de:
+      <select id="select-usuario"></select>
+    </label>
+    <div id="detalle"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/teams.js"></script>
+<script src="js/clasificacion.js"></script>
+</body>
+</html>

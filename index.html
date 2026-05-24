@@ -110,6 +110,7 @@ async function accion() {
 
   const fila = Array.isArray(data) ? data[0] : data;
   Sesion.guardar({ id: fila.usuario_id, token: fila.session_token, nombre, es_admin: fila.es_admin });
+  localStorage.setItem("porra_last_name", nombre);
 
   const ov = document.createElement("div");
   ov.className = "modal-backdrop";
@@ -124,7 +125,16 @@ async function accion() {
   setTimeout(() => window.location.href = "pronosticos.html", 900);
 }
 
+// Si ya hay sesión activa, saltar directo a pronósticos
 if (Sesion.cargar()) window.location.href = "pronosticos.html";
+
+// Si no hay sesión pero el navegador recuerda el último nombre usado, rellenarlo
+// y mover el foco al PIN para entrar más rápido.
+const ultimoNombre = localStorage.getItem("porra_last_name");
+if (ultimoNombre) {
+  $("#nombre").value = ultimoNombre;
+  setTimeout(() => $("#pin").focus(), 50);
+}
 </script>
 </body>
 </html>

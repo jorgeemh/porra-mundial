@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mis pronósticos · Porra Mundial 2026</title>
+<title>Cuadro · Porra Mundial 2026</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -11,9 +11,9 @@
   <div class="topbar-inner">
     <span id="usuario-nombre"></span>
     <nav>
-      <a href="pronosticos.html" class="activo">Pronósticos</a>
+      <a href="pronosticos.html">Pronósticos</a>
       <a href="grupos.html">Grupos</a>
-      <a href="cuadro.html">Cuadro</a>
+      <a href="cuadro.html" class="activo">Cuadro</a>
       <a href="clasificacion.html">Clasificación</a>
       <a href="admin.html" id="link-admin" style="display:none">Admin</a>
       <a href="#" id="btn-salir">Salir</a>
@@ -21,21 +21,13 @@
   </div>
 </header>
 
-<main class="container">
-  <div id="error" class="error" style="display:none"></div>
-
-  <section class="card">
-    <h2>Fase de grupos</h2>
-    <p class="sub" id="estado-grupos"></p>
-    <div id="grupos"></div>
-  </section>
-
-  <section class="card" id="seccion-bracket" style="display:none">
-    <h2>Cuadro eliminatorio</h2>
-    <p class="sub" id="estado-bracket"></p>
-    <div id="bracket"></div>
-    <button id="btn-guardar-bracket" style="display:none">Guardar bracket completo</button>
-  </section>
+<main class="container container-ancho">
+  <h2 style="text-align:center; margin-bottom:8px">🏆 Cuadro eliminatorio</h2>
+  <p class="sub" id="estado" style="text-align:center"></p>
+  <div id="aviso" class="error" style="display:none"></div>
+  <div class="bracket-wrap">
+    <div class="bracket" id="bracket"></div>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -43,6 +35,6 @@
 <script src="js/supabase.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/teams.js"></script>
-<script src="js/partidos.js"></script>
+<script src="js/cuadro.js"></script>
 </body>
 </html>

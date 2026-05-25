@@ -293,19 +293,19 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
 /* Bandera grande como marca de agua en el fondo del card */
 .jugador-flag-bg {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 32%; left: 50%;
   transform: translate(-50%, -50%) rotate(-8deg);
   font-size: 8rem; line-height: 1;
-  opacity: .13;
+  opacity: .20;
   pointer-events: none;
   z-index: 0;
-  filter: saturate(1.2);
+  filter: saturate(1.25);
   transition: opacity .2s ease, transform .25s ease;
 }
 .jugador-card:hover:not(:disabled):not(.selected) .jugador-flag-bg {
-  opacity: .22; transform: translate(-50%, -50%) rotate(-4deg) scale(1.05);
+  opacity: .32; transform: translate(-50%, -50%) rotate(-4deg) scale(1.05);
 }
-.jugador-card.selected .jugador-flag-bg { opacity: .18; }
+.jugador-card.selected .jugador-flag-bg { opacity: .26; }
 
 /* Wrapper de la foto (sin chip de bandera) */
 .jugador-foto-wrap {

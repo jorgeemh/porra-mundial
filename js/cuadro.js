@@ -59,10 +59,12 @@
     return { flag: e.flag, nombre: e.nombre, code: codigo };
   }
 
-  function renderMatch(id, esFinal = false) {
+  function renderMatch(id, ronda, esFinal = false) {
+    const rondaLabel = titulos[ronda] || "";
     const m = partidoPorId[id];
     if (!m) {
       return `<div class="bmatch placeholder">
+        <div class="bmatch-ronda">${rondaLabel}</div>
         <div class="bteam"><span class="bname">—</span></div>
         <div class="bteam"><span class="bname">—</span></div>
       </div>`;
@@ -77,6 +79,7 @@
     const campeon = esFinal && ganador;
     return `
       <div class="bmatch ${campeon?'es-final':''}">
+        <div class="bmatch-ronda">${rondaLabel}</div>
         ${campeon ? '<div class="campeon-banner">🏆 Campeón</div>' : ''}
         <div class="bteam ${ganoA?'ganador':''} ${perdedorA?'perdedor':''}">
           <span class="bflag">${a.flag}</span>
@@ -94,8 +97,7 @@
   function renderColumn(ronda, ids, lado) {
     return `
       <div class="round round-${ronda} round-${lado}">
-        <div class="round-title">${titulos[ronda]}</div>
-        ${ids.map(id => renderMatch(id)).join("")}
+        ${ids.map(id => renderMatch(id, ronda)).join("")}
       </div>`;
   }
 
@@ -107,7 +109,6 @@
   html += renderColumn("sf",  izq.sf,  "izq");
   // Final en el centro
   html += `<div class="round round-final round-centro">
-    <div class="round-title">${titulos.final}</div>
     <div class="trofeo-final" aria-hidden="true">
       <svg viewBox="0 0 64 64" class="trofeo-svg">
         <defs>
@@ -131,7 +132,7 @@
       </svg>
       <div class="trofeo-glow"></div>
     </div>
-    ${renderMatch(finalId, true)}
+    ${renderMatch(finalId, "final", true)}
   </div>`;
   // Mitad derecha (del centro hacia fuera)
   html += renderColumn("sf",  der.sf,  "der");

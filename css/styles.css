@@ -430,18 +430,23 @@ details summary span.contador {
 .round {
   flex: 1; display: flex; flex-direction: column; justify-content: space-around;
   min-width: 0;
-  position: relative; padding-top: 34px;  /* espacio reservado para el título */
-  /* IMPORTANTE: sin 'gap' y con el título posicionado en absoluto fuera del flex,
-     space-around distribuye uniformemente solo los matches, alineándolos con los
-     puntos medios de la ronda anterior. */
+  /* IMPORTANTE: sin 'gap'. Cada match lleva su propia etiqueta de ronda
+     (.bmatch-ronda) en su interior, así que ya no necesitamos un título
+     a nivel de columna. space-around distribuye los matches alineándolos
+     con los puntos medios de la ronda anterior. */
 }
 .round-centro { flex: 0.95; justify-content: center; min-width: 130px; }
 .round-centro > .bmatch { transform: scale(1.04); margin: 0 6px; }
-.round-title {
-  font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-  color: var(--text-faint); text-align: center; padding: 6px 0;
-  position: absolute; top: 0; left: 0; right: 0;
-  background: var(--bg); z-index: 2;
+
+/* Etiqueta de ronda DENTRO de cada caja de partido */
+.bmatch-ronda {
+  font-size: .56rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--text-faint);
+  text-align: center; margin: -1px 0 4px;
+}
+.bmatch.es-final .bmatch-ronda {
+  color: #b45309; font-size: .68rem; letter-spacing: .18em;
+  margin-bottom: 6px;
 }
 .bmatch {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;

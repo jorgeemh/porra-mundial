@@ -430,15 +430,18 @@ details summary span.contador {
 .round {
   flex: 1; display: flex; flex-direction: column; justify-content: space-around;
   min-width: 0;
-  /* IMPORTANTE: sin 'gap'. Con gap, space-around no distribuye uniformemente y los
-     matches de cada ronda no quedan alineados con los puntos medios de la ronda anterior. */
+  position: relative; padding-top: 34px;  /* espacio reservado para el título */
+  /* IMPORTANTE: sin 'gap' y con el título posicionado en absoluto fuera del flex,
+     space-around distribuye uniformemente solo los matches, alineándolos con los
+     puntos medios de la ronda anterior. */
 }
 .round-centro { flex: 0.95; justify-content: center; min-width: 130px; }
 .round-centro > .bmatch { transform: scale(1.04); margin: 0 6px; }
 .round-title {
   font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-  color: var(--text-faint); text-align: center; margin-bottom: 4px;
-  position: sticky; top: 0; background: var(--bg); padding: 6px 0; z-index: 2;
+  color: var(--text-faint); text-align: center; padding: 6px 0;
+  position: absolute; top: 0; left: 0; right: 0;
+  background: var(--bg); z-index: 2;
 }
 .bmatch {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;

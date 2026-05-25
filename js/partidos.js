@@ -509,9 +509,11 @@
       ].filter(Boolean).join(" ");
       return `
         <button class="${cls}" data-id="${j.id}" ${bloqueado?'disabled':''} title="${j.nombre} · ${eq.nombre}">
-          <div class="jugador-foto">
-            <img src="${avatarJugador(j)}" alt="${j.nombre}" loading="lazy">
-            <span class="jugador-flag">${eq.flag}</span>
+          <div class="jugador-foto-wrap">
+            <div class="jugador-foto">
+              <img src="${avatarJugador(j)}" alt="${j.nombre}" loading="lazy">
+            </div>
+            <span class="jugador-flag" title="${eq.nombre}">${eq.flag}</span>
             ${esGanador ? '<span class="jugador-corona">👑</span>' : ''}
           </div>
           <div class="jugador-info">

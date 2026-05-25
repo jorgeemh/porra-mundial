@@ -30,7 +30,6 @@
 
     {"id":"lamine_yamal","nombre":"Lamine Yamal","equipo":"ESP","pos":"F","foto":null},
     {"id":"nico_williams","nombre":"Nico Williams","equipo":"ESP","pos":"F","foto":null},
-    {"id":"morata","nombre":"Álvaro Morata","equipo":"ESP","pos":"F","foto":null},
     {"id":"oyarzabal","nombre":"Mikel Oyarzabal","equipo":"ESP","pos":"F","foto":null},
     {"id":"ferran","nombre":"Ferran Torres","equipo":"ESP","pos":"F","foto":null},
     {"id":"pedri","nombre":"Pedri","equipo":"ESP","pos":"M","foto":null},

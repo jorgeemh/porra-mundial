@@ -290,13 +290,30 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
   border-color: #fbbf24;
   background: linear-gradient(180deg, #fffbeb, #fff);
 }
-/* Wrapper exterior: ancla la bandera y la corona (sin overflow:hidden) */
+/* Bandera grande como marca de agua en el fondo del card */
+.jugador-flag-bg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  font-size: 8rem; line-height: 1;
+  opacity: .13;
+  pointer-events: none;
+  z-index: 0;
+  filter: saturate(1.2);
+  transition: opacity .2s ease, transform .25s ease;
+}
+.jugador-card:hover:not(:disabled):not(.selected) .jugador-flag-bg {
+  opacity: .22; transform: translate(-50%, -50%) rotate(-4deg) scale(1.05);
+}
+.jugador-card.selected .jugador-flag-bg { opacity: .18; }
+
+/* Wrapper de la foto (sin chip de bandera) */
 .jugador-foto-wrap {
   position: relative;
-  width: 96px; height: 96px;
+  width: 90px; height: 90px;
   margin: 4px auto 8px;
+  z-index: 1;
 }
-/* Contenedor interior: recorta circular la foto */
 .jugador-foto {
   width: 90px; height: 90px; margin: 0 auto;
   border-radius: 50%; overflow: hidden;
@@ -307,23 +324,13 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
 .jugador-foto img {
   width: 100%; height: 100%; object-fit: cover; display: block;
 }
-.jugador-flag {
-  position: absolute; bottom: 0; right: 0;
-  font-size: 1.15rem; line-height: 1;
-  background: #fff; border-radius: 50%;
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.18);
-  border: 2px solid #fff;
-  z-index: 2;
-}
 .jugador-corona {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
   font-size: 1.5rem; filter: drop-shadow(0 2px 4px rgba(180,83,9,.4));
   animation: trofeoFlot 2.5s ease-in-out infinite;
   z-index: 3;
 }
-.jugador-info { display: flex; flex-direction: column; gap: 2px; }
+.jugador-info { display: flex; flex-direction: column; gap: 2px; position: relative; z-index: 1; }
 .jugador-nombre {
   font-size: .82rem; font-weight: 700; line-height: 1.15;
   color: var(--text);

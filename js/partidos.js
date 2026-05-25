@@ -79,12 +79,14 @@
     const golEl = $("#counter-goleador");
     if (golEl) {
       if (goleadorBloqueado) golEl.innerHTML = "🔒 Bloqueado";
-      else golEl.innerHTML = pickGoleador ? "✅ Marcado" : "Sin marcar";
+      else if (typeof pickGoleador !== "undefined" && pickGoleador !== savedPickGoleador) golEl.innerHTML = "<span style='opacity:.85'>Sin guardar</span>";
+      else golEl.innerHTML = (typeof pickGoleador !== "undefined" && pickGoleador) ? "✅ Marcado" : "Sin marcar";
     }
     const mvpEl = $("#counter-mvp");
     if (mvpEl) {
       if (mvpBloqueado) mvpEl.innerHTML = "🔒 Bloqueado";
-      else mvpEl.innerHTML = pickMvp ? "✅ Marcado" : "Sin marcar";
+      else if (typeof pickMvp !== "undefined" && pickMvp !== savedPickMvp) mvpEl.innerHTML = "<span style='opacity:.85'>Sin guardar</span>";
+      else mvpEl.innerHTML = (typeof pickMvp !== "undefined" && pickMvp) ? "✅ Marcado" : "Sin marcar";
     }
   }
 
@@ -110,11 +112,17 @@
     // Mostrar/ocultar barras flotantes según tab activa
     const flotG = $("#botones-grupos");
     const flotE = $("#botones-elim");
+    const flotGol = $("#botones-goleador");
+    const flotMvp = $("#botones-mvp");
     const mostrarG = (tab === "grupos" && !grupoCerrado);
     const mostrarE = (tab === "elim" && eliminatoriasAbiertas && !bracketBloqueado && totalElim > 0);
+    const mostrarGol = (tab === "goleador" && !goleadorBloqueado);
+    const mostrarMvp = (tab === "mvp" && !mvpBloqueado);
     if (flotG) flotG.style.display = mostrarG ? "flex" : "none";
     if (flotE) flotE.style.display = mostrarE ? "flex" : "none";
-    document.body.classList.toggle("tiene-flotantes", mostrarG || mostrarE);
+    if (flotGol) flotGol.style.display = mostrarGol ? "flex" : "none";
+    if (flotMvp) flotMvp.style.display = mostrarMvp ? "flex" : "none";
+    document.body.classList.toggle("tiene-flotantes", mostrarG || mostrarE || mostrarGol || mostrarMvp);
   }
 
   // Estado inicial de la tab eliminatorias
@@ -449,9 +457,11 @@
   }
 
   // ============ PREMIOS (GOLEADOR + MVP) ============
-  // Pick guardado por usuario para cada premio
-  let pickGoleador = savedPicks["PREMIO_GOLEADOR"] || null;
-  let pickMvp = savedPicks["PREMIO_MVP"] || null;
+  // savedPickX = lo que hay guardado en BD. localPickX = selección actual (puede no estar guardada aún).
+  let savedPickGoleador = savedPicks["PREMIO_GOLEADOR"] || null;
+  let savedPickMvp = savedPicks["PREMIO_MVP"] || null;
+  let pickGoleador = savedPickGoleador;
+  let pickMvp = savedPickMvp;
   // Resultado real (cuando termine el torneo)
   const ganadorGoleador = (partidos.find(p => p.id === "PREMIO_GOLEADOR") || {}).resultado || null;
   const ganadorMvp = (partidos.find(p => p.id === "PREMIO_MVP") || {}).resultado || null;
@@ -546,42 +556,82 @@
     $(`#estado-${tipo}`).innerHTML = texto;
   }
 
+  function getPick(tipo) { return tipo === "goleador" ? pickGoleador : pickMvp; }
+  function setPick(tipo, val) { if (tipo === "goleador") pickGoleador = val; else pickMvp = val; }
+  function getSavedPick(tipo) { return tipo === "goleador" ? savedPickGoleador : savedPickMvp; }
+  function setSavedPick(tipo, val) { if (tipo === "goleador") savedPickGoleador = val; else savedPickMvp = val; }
+
+  function renderBotonesPremio(tipo) {
+    const bloqueado = tipo === "goleador" ? goleadorBloqueado : mvpBloqueado;
+    let div = $(`#botones-${tipo}`);
+    if (!div) {
+      div = document.createElement("div");
+      div.id = `botones-${tipo}`;
+      div.className = "botones-flotantes";
+      document.body.appendChild(div);
+    }
+    if (bloqueado) { div.innerHTML = ""; div.style.display = "none"; return; }
+    const local = getPick(tipo);
+    const saved = getSavedPick(tipo);
+    const cambios = local !== saved;
+    const lista = tipo === "goleador" ? jugadoresGoleador : jugadoresMvp;
+    const jug = local ? lista.find(j => j.id === local) : null;
+    div.innerHTML = `
+      <button id="btn-guardar-${tipo}" ${cambios && local ? '' : 'disabled'}>
+        💾 Guardar pick${jug ? ` · ${jug.nombre}` : ''}
+      </button>
+      ${cambios && saved ? `<button id="btn-cancelar-${tipo}" class="secundario">Cancelar</button>` : ''}
+    `;
+    $(`#btn-guardar-${tipo}`).onclick = async () => {
+      const btn = $(`#btn-guardar-${tipo}`);
+      btn.disabled = true;
+      btn.innerHTML = `<span class="loading"></span> Guardando…`;
+      const { error } = await sb.rpc("guardar_pronostico_premio", {
+        p_usuario_id: sesion.id, p_token: sesion.token,
+        p_tipo: tipo, p_jugador_id: local
+      });
+      if (error) {
+        mostrarError(error.message);
+        renderBotonesPremio(tipo);
+      } else {
+        setSavedPick(tipo, local);
+        renderBotonesPremio(tipo);
+        actualizarEstadoPremio(tipo);
+        actualizarContadores();
+        Modal.toast("Pick guardado ✅");
+      }
+    };
+    const cancelBtn = $(`#btn-cancelar-${tipo}`);
+    if (cancelBtn) cancelBtn.onclick = () => {
+      setPick(tipo, getSavedPick(tipo));
+      renderJugadoresGrid(tipo);
+      renderBotonesPremio(tipo);
+      actualizarEstadoPremio(tipo);
+      actualizarContadores();
+    };
+  }
+
   function setupPremio(tipo) {
     const buscadorEl = $(`#busca-${tipo}`);
     buscadorEl.addEventListener("input", () => renderJugadoresGrid(tipo));
 
     const grid = $(`#grid-${tipo}`);
-    grid.addEventListener("click", async e => {
+    grid.addEventListener("click", e => {
       const card = e.target.closest(".jugador-card");
       if (!card || card.disabled) return;
-      const jugadorId = card.dataset.id;
       const bloqueado = tipo === "goleador" ? goleadorBloqueado : mvpBloqueado;
       if (bloqueado) return;
-
-      // Optimistic update
-      const prev = tipo === "goleador" ? pickGoleador : pickMvp;
-      if (tipo === "goleador") pickGoleador = jugadorId; else pickMvp = jugadorId;
+      const jugadorId = card.dataset.id;
+      // Toggle: si vuelves a marcar el mismo pick local, no cambia nada
+      setPick(tipo, jugadorId);
       renderJugadoresGrid(tipo);
+      renderBotonesPremio(tipo);
       actualizarEstadoPremio(tipo);
       actualizarContadores();
-
-      const { error } = await sb.rpc("guardar_pronostico_premio", {
-        p_usuario_id: sesion.id, p_token: sesion.token,
-        p_tipo: tipo, p_jugador_id: jugadorId
-      });
-      if (error) {
-        // Revertir
-        if (tipo === "goleador") pickGoleador = prev; else pickMvp = prev;
-        renderJugadoresGrid(tipo);
-        actualizarEstadoPremio(tipo);
-        actualizarContadores();
-        mostrarError(error.message);
-      } else {
-        Modal.toast("Guardado ✅");
-      }
     });
 
     renderJugadoresGrid(tipo);
+    renderBotonesPremio(tipo);
     actualizarEstadoPremio(tipo);
   }
 

@@ -64,6 +64,43 @@
   </section>
 
   <section class="card">
+    <h2>5b) Premios (Máximo Goleador y MVP)</h2>
+    <p class="sub">Bloquea los pronósticos de premios individuales cuando creas que ya nadie debería poder cambiar su pick (típicamente al empezar el torneo).</p>
+
+    <div style="margin-top:12px; padding:14px; border:1px solid var(--border); border-radius:12px">
+      <p class="sub" id="estado-bloqueo-goleador" style="font-weight:600; margin-bottom:8px"></p>
+      <div class="botones">
+        <button id="btn-bloquear-goleador">🔒 Bloquear máximo goleador</button>
+        <button id="btn-desbloquear-goleador" class="secundario" style="display:none">🔓 Desbloquear</button>
+      </div>
+    </div>
+
+    <div style="margin-top:10px; padding:14px; border:1px solid var(--border); border-radius:12px">
+      <p class="sub" id="estado-bloqueo-mvp" style="font-weight:600; margin-bottom:8px"></p>
+      <div class="botones">
+        <button id="btn-bloquear-mvp">🔒 Bloquear MVP</button>
+        <button id="btn-desbloquear-mvp" class="secundario" style="display:none">🔓 Desbloquear</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; padding:14px; border:1px dashed var(--border-strong); border-radius:12px; background: var(--surface-2)">
+      <p class="sub" style="margin-bottom:8px"><b>🏁 Marcar ganadores</b> (al final del torneo). Pega el <code>id</code> del jugador tal como aparece en <code>data/jugadores.json</code> (ej. <code>messi</code>, <code>mbappe</code>).</p>
+      <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:8px; align-items:end">
+        <label>Máximo Goleador (id jugador)
+          <input type="text" id="input-ganador-goleador" placeholder="ej. messi">
+        </label>
+        <button id="btn-set-ganador-goleador" class="secundario">Guardar</button>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:end">
+        <label>MVP (id jugador)
+          <input type="text" id="input-ganador-mvp" placeholder="ej. messi">
+        </label>
+        <button id="btn-set-ganador-mvp" class="secundario">Guardar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>6) Gestionar usuarios</h2>
     <div id="lista-usuarios"></div>
   </section>

@@ -16,6 +16,8 @@ window.PORRA_CONFIG = {
     r16: 3,     // octavos
     qf:  5,     // cuartos
     sf:  7,     // semis
-    final: 10   // campeón
+    final: 10,  // campeón
+    goleador: 15,  // acertar máximo goleador
+    mvp: 15        // acertar MVP
   }
 };

@@ -356,6 +356,57 @@
   };
   refrescarEstadoGruposBloqueados();
 
+  // ---------- 5b) Bloqueo de premios (goleador + MVP) ----------
+  async function refrescarEstadoPremio(tipo) {
+    const clave = tipo + "_bloqueado";
+    const { data } = await sb.from("config").select("*").eq("clave", clave).maybeSingle();
+    const bloq = data && data.valor === "true";
+    const lbl = $(`#estado-bloqueo-${tipo}`);
+    const btnB = $(`#btn-bloquear-${tipo}`);
+    const btnD = $(`#btn-desbloquear-${tipo}`);
+    if (!lbl || !btnB || !btnD) return;
+    const titulo = tipo === "goleador" ? "Máximo goleador" : "MVP";
+    if (bloq) {
+      lbl.innerHTML = `🔒 Pronóstico de <b>${titulo}</b> bloqueado.`;
+      lbl.style.color = "#b91c1c";
+      btnB.style.display = "none"; btnD.style.display = "inline-block";
+    } else {
+      lbl.innerHTML = `🟢 Pronóstico de <b>${titulo}</b> abierto. Los usuarios pueden cambiar su pick.`;
+      lbl.style.color = "";
+      btnB.style.display = "inline-block"; btnD.style.display = "none";
+    }
+  }
+  for (const tipo of ["goleador","mvp"]) {
+    $(`#btn-bloquear-${tipo}`).onclick = async () => {
+      const titulo = tipo === "goleador" ? "máximo goleador" : "MVP";
+      const c = await Modal.confirm(`Tras esto nadie podrá modificar su pick de ${titulo}.`, `¿Bloquear ${titulo}?`, { okText: "Bloquear", peligro: true });
+      if (!c) return;
+      const { error } = await sb.rpc("admin_bloquear_premio", { p_usuario_id: sesion.id, p_token: sesion.token, p_tipo: tipo });
+      if (error) mostrarError(error.message);
+      else { ok(`Pronóstico de ${titulo} bloqueado 🔒`); refrescarEstadoPremio(tipo); }
+    };
+    $(`#btn-desbloquear-${tipo}`).onclick = async () => {
+      const titulo = tipo === "goleador" ? "máximo goleador" : "MVP";
+      const c = await Modal.confirm(`Los usuarios podrán volver a cambiar su pick de ${titulo}.`, "¿Desbloquear?", { okText: "Desbloquear" });
+      if (!c) return;
+      const { error } = await sb.rpc("admin_desbloquear_premio", { p_usuario_id: sesion.id, p_token: sesion.token, p_tipo: tipo });
+      if (error) mostrarError(error.message);
+      else { ok(`Pronóstico de ${titulo} desbloqueado 🔓`); refrescarEstadoPremio(tipo); }
+    };
+    $(`#btn-set-ganador-${tipo}`).onclick = async () => {
+      const input = $(`#input-ganador-${tipo}`);
+      const jid = (input.value || "").trim();
+      if (!jid) { mostrarError("Introduce el id del jugador"); input.focus(); return; }
+      const titulo = tipo === "goleador" ? "máximo goleador" : "MVP";
+      const c = await Modal.confirm(`Vas a marcar a "${jid}" como ${titulo} oficial del torneo. ¿Confirmas?`, "Marcar ganador", { okText: "Confirmar" });
+      if (!c) return;
+      const { error } = await sb.rpc("admin_set_ganador_premio", { p_usuario_id: sesion.id, p_token: sesion.token, p_tipo: tipo, p_jugador_id: jid });
+      if (error) mostrarError(error.message);
+      else ok(`Ganador de ${titulo} actualizado ✅`);
+    };
+    refrescarEstadoPremio(tipo);
+  }
+
   // ---------- 5) Bloquear bracket ----------
   $("#btn-bloquear").onclick = async () => {
     const c = await Modal.confirm("Tras esto nadie podrá cambiar su cuadro eliminatorio.", "¿Bloquear bracket?", { okText: "Bloquear", peligro: true });

@@ -5,11 +5,12 @@
   if (sesion.es_admin) $("#link-admin").style.display = "inline-block";
   $("#btn-salir").addEventListener("click", e => { e.preventDefault(); Sesion.cerrar(); location.href = "index.html"; });
 
-  const [cfgRes, partidosRes, pronRes, bracketJson] = await Promise.all([
+  const [cfgRes, partidosRes, pronRes, bracketJson, jugadoresJson] = await Promise.all([
     sb.from("config").select("*"),
     sb.from("partidos").select("*").order("fecha_hora"),
     sb.from("pronosticos").select("*").eq("usuario_id", sesion.id),
-    fetch("data/bracket.json").then(r=>r.json()).catch(()=>null)
+    fetch("data/bracket.json").then(r=>r.json()).catch(()=>null),
+    fetch("data/jugadores.json").then(r=>r.json()).catch(()=>null)
   ]);
   if (cfgRes.error || partidosRes.error || pronRes.error) {
     mostrarError("Error cargando datos. ¿Has ejecutado el SQL en Supabase?"); return;
@@ -28,6 +29,15 @@
   const limiteGrupos = new Date(config.fecha_limite_grupos);
   const gruposBloqueadosManual = config.grupos_bloqueados === "true";
   const grupoCerrado = new Date() >= limiteGrupos || gruposBloqueadosManual;
+  const goleadorBloqueado = config.goleador_bloqueado === "true";
+  const mvpBloqueado = config.mvp_bloqueado === "true";
+
+  // Lista de jugadores (para tabs Goleador y MVP)
+  const todosJugadores = (jugadoresJson && jugadoresJson.jugadores) || [];
+  // Goleador: solo F y M (sin porteros ni defensas)
+  const jugadoresGoleador = todosJugadores.filter(j => j.pos === "F" || j.pos === "M");
+  // MVP: todos
+  const jugadoresMvp = todosJugadores;
   const eliminatoriasAbiertas = config.eliminatorias_abiertas === "true";
   const bracketBloqueado = config.bracket_bloqueado === "true";
 
@@ -37,7 +47,12 @@
   const totalElim = partidosElim.length;
 
   const tabBtns = $$(".pron-tab");
-  const panels = { grupos: $("#panel-grupos"), elim: $("#panel-elim") };
+  const panels = {
+    grupos: $("#panel-grupos"),
+    elim: $("#panel-elim"),
+    goleador: $("#panel-goleador"),
+    mvp: $("#panel-mvp")
+  };
   const tabElim = tabBtns.find(b => b.dataset.tab === "elim");
 
   function actualizarContadores() {
@@ -52,12 +67,24 @@
       elimCounterEl.textContent = "Sin partidos aún";
     } else {
       const fuente = (typeof localBPicksGlobal !== "undefined") ? localBPicksGlobal
-                    : Object.fromEntries(Object.entries(localPicks).filter(([k]) => !k.startsWith("G_")));
-      const nE = Object.keys(fuente).length;
+                    : Object.fromEntries(Object.entries(localPicks).filter(([k]) => !k.startsWith("G_") && !k.startsWith("PREMIO_")));
+      // Excluir PREMIO_* del conteo de eliminatorias
+      const nE = Object.keys(fuente).filter(k => !k.startsWith("PREMIO_")).length;
       const guardado = JSON.stringify(fuente) === JSON.stringify(savedBPicksRef || {});
       elimCounterEl.innerHTML = bracketBloqueado
         ? `🔒 Bloqueado · ${nE}/${totalElim}`
         : `${nE}/${totalElim} marcados${!guardado ? " · <span style='opacity:.85'>sin guardar</span>" : ""}`;
+    }
+    // Contadores para Goleador y MVP
+    const golEl = $("#counter-goleador");
+    if (golEl) {
+      if (goleadorBloqueado) golEl.innerHTML = "🔒 Bloqueado";
+      else golEl.innerHTML = pickGoleador ? "✅ Marcado" : "Sin marcar";
+    }
+    const mvpEl = $("#counter-mvp");
+    if (mvpEl) {
+      if (mvpBloqueado) mvpEl.innerHTML = "🔒 Bloqueado";
+      else mvpEl.innerHTML = pickMvp ? "✅ Marcado" : "Sin marcar";
     }
   }
 
@@ -69,6 +96,10 @@
       if (!el) return;
       el.style.display = (k === tab) ? "" : "none";
     });
+    // Refocus search input al cambiar a goleador/mvp para mejor UX
+    if (tab === "goleador" || tab === "mvp") {
+      setTimeout(() => $(`#busca-${tab}`)?.focus(), 50);
+    }
     // Re-animar el panel activo
     if (panels[tab]) {
       panels[tab].style.animation = "none";
@@ -416,6 +447,144 @@
       }
     };
   }
+
+  // ============ PREMIOS (GOLEADOR + MVP) ============
+  // Pick guardado por usuario para cada premio
+  let pickGoleador = savedPicks["PREMIO_GOLEADOR"] || null;
+  let pickMvp = savedPicks["PREMIO_MVP"] || null;
+  // Resultado real (cuando termine el torneo)
+  const ganadorGoleador = (partidos.find(p => p.id === "PREMIO_GOLEADOR") || {}).resultado || null;
+  const ganadorMvp = (partidos.find(p => p.id === "PREMIO_MVP") || {}).resultado || null;
+
+  // Avatar con iniciales + color del equipo si no hay foto
+  function avatarJugador(j) {
+    if (j.foto) return j.foto;
+    const eq = equipo(j.equipo);
+    const iniciales = j.nombre.split(/\s+/).filter(s => s && /[A-Za-zÀ-ÿ]/.test(s[0]))
+      .slice(0, 2).map(s => s[0]).join("").toUpperCase() || "?";
+    // Color basado en el código del equipo (simple hash)
+    const colores = ["ec4899","8b5cf6","14b8a6","f59e0b","0ea5e9","6366f1","f97316","10b981"];
+    const idx = (j.equipo || "").split("").reduce((a,c)=>a+c.charCodeAt(0), 0) % colores.length;
+    const bg = colores[idx];
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(iniciales)}&background=${bg}&color=fff&size=160&font-size=0.5&bold=true&format=svg`;
+  }
+
+  function renderJugadoresGrid(tipo) {
+    const lista = tipo === "goleador" ? jugadoresGoleador : jugadoresMvp;
+    const bloqueado = tipo === "goleador" ? goleadorBloqueado : mvpBloqueado;
+    const pick = tipo === "goleador" ? pickGoleador : pickMvp;
+    const ganador = tipo === "goleador" ? ganadorGoleador : ganadorMvp;
+    const buscadorEl = $(`#busca-${tipo}`);
+    const filtro = (buscadorEl?.value || "").toLowerCase().trim();
+
+    let visibles = lista;
+    if (filtro) {
+      visibles = lista.filter(j => {
+        const eq = equipo(j.equipo);
+        return j.nombre.toLowerCase().includes(filtro)
+          || (eq.nombre || "").toLowerCase().includes(filtro)
+          || (j.equipo || "").toLowerCase().includes(filtro);
+      });
+    }
+
+    const grid = $(`#grid-${tipo}`);
+    if (visibles.length === 0) {
+      grid.innerHTML = `<p class="sub" style="grid-column:1/-1; text-align:center; padding:20px">Sin resultados para "${filtro}"</p>`;
+      return;
+    }
+
+    grid.innerHTML = visibles.map(j => {
+      const eq = equipo(j.equipo);
+      const selected = j.id === pick;
+      const esGanador = ganador && j.id === ganador;
+      const fallado = ganador && selected && j.id !== ganador;
+      const acertado = ganador && selected && j.id === ganador;
+      const cls = [
+        "jugador-card",
+        selected ? "selected" : "",
+        bloqueado ? "bloqueado" : "",
+        esGanador ? "ganador-real" : "",
+        fallado ? "fallado" : "",
+        acertado ? "acertado" : ""
+      ].filter(Boolean).join(" ");
+      return `
+        <button class="${cls}" data-id="${j.id}" ${bloqueado?'disabled':''} title="${j.nombre} · ${eq.nombre}">
+          <div class="jugador-foto">
+            <img src="${avatarJugador(j)}" alt="${j.nombre}" loading="lazy">
+            <span class="jugador-flag">${eq.flag}</span>
+            ${esGanador ? '<span class="jugador-corona">👑</span>' : ''}
+          </div>
+          <div class="jugador-info">
+            <div class="jugador-nombre">${j.nombre}</div>
+            <div class="jugador-equipo">${eq.nombre} · ${j.pos === "P" ? "Portero" : j.pos === "D" ? "Defensa" : j.pos === "M" ? "Mediocampo" : "Delantero"}</div>
+          </div>
+        </button>`;
+    }).join("");
+  }
+
+  function actualizarEstadoPremio(tipo) {
+    const bloqueado = tipo === "goleador" ? goleadorBloqueado : mvpBloqueado;
+    const pick = tipo === "goleador" ? pickGoleador : pickMvp;
+    const ganador = tipo === "goleador" ? ganadorGoleador : ganadorMvp;
+    const lista = tipo === "goleador" ? jugadoresGoleador : jugadoresMvp;
+    const jugador = pick ? lista.find(j => j.id === pick) : null;
+
+    let texto = "";
+    if (ganador) {
+      const realJug = lista.find(j => j.id === ganador);
+      const acertado = pick && pick === ganador;
+      texto = `🏁 Ganador: <b>${realJug ? realJug.nombre : ganador}</b> · ${acertado ? '✅ ¡Lo acertaste!' : (pick ? '❌ Tu pick: ' + (jugador?.nombre || pick) : 'No marcaste a nadie')}`;
+    } else if (bloqueado) {
+      texto = `🔒 Bloqueado. Tu pick: <b>${jugador ? jugador.nombre : '— ninguno —'}</b>`;
+    } else if (jugador) {
+      texto = `Tu pick actual: <b>${jugador.nombre}</b> (${equipo(jugador.equipo).nombre})`;
+    } else {
+      texto = "Selecciona al jugador que crees que será el " + (tipo === "goleador" ? "máximo goleador" : "MVP") + " del torneo. Solo puedes elegir uno.";
+    }
+    $(`#estado-${tipo}`).innerHTML = texto;
+  }
+
+  function setupPremio(tipo) {
+    const buscadorEl = $(`#busca-${tipo}`);
+    buscadorEl.addEventListener("input", () => renderJugadoresGrid(tipo));
+
+    const grid = $(`#grid-${tipo}`);
+    grid.addEventListener("click", async e => {
+      const card = e.target.closest(".jugador-card");
+      if (!card || card.disabled) return;
+      const jugadorId = card.dataset.id;
+      const bloqueado = tipo === "goleador" ? goleadorBloqueado : mvpBloqueado;
+      if (bloqueado) return;
+
+      // Optimistic update
+      const prev = tipo === "goleador" ? pickGoleador : pickMvp;
+      if (tipo === "goleador") pickGoleador = jugadorId; else pickMvp = jugadorId;
+      renderJugadoresGrid(tipo);
+      actualizarEstadoPremio(tipo);
+      actualizarContadores();
+
+      const { error } = await sb.rpc("guardar_pronostico_premio", {
+        p_usuario_id: sesion.id, p_token: sesion.token,
+        p_tipo: tipo, p_jugador_id: jugadorId
+      });
+      if (error) {
+        // Revertir
+        if (tipo === "goleador") pickGoleador = prev; else pickMvp = prev;
+        renderJugadoresGrid(tipo);
+        actualizarEstadoPremio(tipo);
+        actualizarContadores();
+        mostrarError(error.message);
+      } else {
+        Modal.toast("Guardado ✅");
+      }
+    });
+
+    renderJugadoresGrid(tipo);
+    actualizarEstadoPremio(tipo);
+  }
+
+  setupPremio("goleador");
+  setupPremio("mvp");
 
   renderGrupos();
   actualizarContadores();

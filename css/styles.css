@@ -167,8 +167,11 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
 
 /* ---------- TABS PRONÓSTICOS ---------- */
 .pron-tabs {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
   margin-bottom: 18px;
+}
+@media (max-width: 720px) {
+  .pron-tabs { grid-template-columns: 1fr 1fr; }
 }
 .pron-tab {
   display: flex; align-items: center; gap: 12px; text-align: left;
@@ -221,6 +224,105 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
   .pron-tab-icon { font-size: 1.4rem; }
   .pron-tab-title { font-size: .88rem; }
   .pron-tab-counter { font-size: .72rem; }
+}
+
+/* ---------- BUSCADOR + GRID DE JUGADORES ---------- */
+.buscador-jugador {
+  margin: 12px 0 16px;
+}
+.buscador-jugador input {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  border: 1.5px solid var(--border); background: var(--surface-2);
+  font-size: 1rem; font-family: inherit; font-weight: 500;
+  transition: all .15s;
+}
+.buscador-jugador input:focus {
+  outline: none; border-color: var(--primary); background: #fff;
+  box-shadow: 0 0 0 4px rgba(236,72,153,.12);
+}
+.jugadores-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .jugadores-grid { grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 10px; }
+}
+
+.jugador-card {
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 10px; gap: 8px;
+  background: var(--surface); color: var(--text);
+  border: 2px solid var(--border); border-radius: 14px;
+  cursor: pointer; transition: all .15s ease;
+  text-align: center;
+  box-shadow: none; background-image: none;
+  font-family: inherit;
+  position: relative; overflow: hidden;
+}
+.jugador-card:hover:not(:disabled):not(.selected) {
+  transform: translateY(-3px); border-color: var(--border-strong);
+  box-shadow: var(--shadow-md); background: #fff;
+}
+.jugador-card.selected {
+  border-color: var(--primary); background: linear-gradient(180deg, #fdf4ff, #fff);
+  box-shadow: 0 6px 20px rgba(236,72,153,.25);
+}
+.jugador-card.selected::before {
+  content: "✓"; position: absolute; top: 6px; right: 8px;
+  background: var(--primary); color: #fff; font-weight: 700;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; z-index: 2;
+  box-shadow: 0 2px 6px rgba(236,72,153,.4);
+}
+.jugador-card.bloqueado { opacity: .65; cursor: not-allowed; }
+.jugador-card.acertado {
+  border-color: #10b981; background: linear-gradient(180deg, #ecfdf5, #fff);
+  box-shadow: 0 6px 20px rgba(16,185,129,.3);
+}
+.jugador-card.acertado::before { background: #10b981; }
+.jugador-card.fallado {
+  border-color: #ef4444; background: linear-gradient(180deg, #fef2f2, #fff);
+  box-shadow: 0 6px 20px rgba(239,68,68,.25);
+}
+.jugador-card.fallado::before { content: "✕"; background: #ef4444; }
+.jugador-card.ganador-real:not(.selected) {
+  border-color: #fbbf24;
+  background: linear-gradient(180deg, #fffbeb, #fff);
+}
+.jugador-foto {
+  width: 90px; height: 90px; margin: 0 auto; position: relative;
+  border-radius: 50%; overflow: hidden;
+  background: var(--surface-2);
+  border: 2px solid #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+}
+.jugador-foto img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.jugador-flag {
+  position: absolute; bottom: -2px; right: -2px;
+  font-size: 1.3rem;
+  background: #fff; border-radius: 50%;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+.jugador-corona {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  font-size: 1.4rem; filter: drop-shadow(0 2px 4px rgba(180,83,9,.3));
+  animation: trofeoFlot 2.5s ease-in-out infinite;
+}
+.jugador-info { display: flex; flex-direction: column; gap: 2px; }
+.jugador-nombre {
+  font-size: .82rem; font-weight: 700; line-height: 1.15;
+  color: var(--text);
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  min-height: 2.3em;
+}
+.jugador-equipo {
+  font-size: .7rem; color: var(--text-faint); font-weight: 500;
 }
 
 /* ---------- GRUPOS ---------- */

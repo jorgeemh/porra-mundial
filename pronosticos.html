@@ -39,6 +39,20 @@
         <div class="pron-tab-counter" id="counter-elim">—</div>
       </div>
     </button>
+    <button class="pron-tab" data-tab="goleador" role="tab">
+      <span class="pron-tab-icon">⚽️</span>
+      <div class="pron-tab-info">
+        <div class="pron-tab-title">Máx. goleador</div>
+        <div class="pron-tab-counter" id="counter-goleador">—</div>
+      </div>
+    </button>
+    <button class="pron-tab" data-tab="mvp" role="tab">
+      <span class="pron-tab-icon">🌟</span>
+      <div class="pron-tab-info">
+        <div class="pron-tab-title">MVP</div>
+        <div class="pron-tab-counter" id="counter-mvp">—</div>
+      </div>
+    </button>
   </div>
 
   <section class="card pron-panel" id="panel-grupos">
@@ -52,6 +66,24 @@
     <p class="sub" id="estado-bracket"></p>
     <div id="bracket"></div>
     <button id="btn-guardar-bracket" style="display:none">Guardar bracket completo</button>
+  </section>
+
+  <section class="card pron-panel" id="panel-goleador" style="display:none">
+    <h2>⚽️ Máximo goleador del torneo</h2>
+    <p class="sub" id="estado-goleador"></p>
+    <div class="buscador-jugador">
+      <input type="search" id="busca-goleador" placeholder="🔍 Buscar jugador o selección…" autocomplete="off">
+    </div>
+    <div class="jugadores-grid" id="grid-goleador"></div>
+  </section>
+
+  <section class="card pron-panel" id="panel-mvp" style="display:none">
+    <h2>🌟 MVP del torneo</h2>
+    <p class="sub" id="estado-mvp"></p>
+    <div class="buscador-jugador">
+      <input type="search" id="busca-mvp" placeholder="🔍 Buscar jugador o selección…" autocomplete="off">
+    </div>
+    <div class="jugadores-grid" id="grid-mvp"></div>
   </section>
 </main>
 

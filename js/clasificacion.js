@@ -54,6 +54,19 @@
       aciertos += n;
       puntos += n * puntosRonda[f];
     }
+
+    // Premios: máximo goleador y MVP del torneo (15 puntos cada uno si aciertas)
+    for (const tipo of ["GOLEADOR","MVP"]) {
+      const pid = "PREMIO_" + tipo;
+      const part = partPorId[pid];
+      if (!part || !part.resultado) continue;
+      const mi = mis.find(pr => pr.partido_id === pid);
+      if (mi && mi.prediccion === part.resultado) {
+        aciertos++;
+        puntos += PUNTOS[tipo.toLowerCase()] || 0;
+      }
+    }
+
     return { id: u.id, nombre: u.nombre, aciertos, puntos };
   });
 
@@ -137,6 +150,30 @@
           }).join("")}
         </div>
       </div>` : ""}
+      ${(() => {
+        // Resumen de premios
+        const goleadorPart = partPorId["PREMIO_GOLEADOR"];
+        const mvpPart = partPorId["PREMIO_MVP"];
+        if (!goleadorPart && !mvpPart) return "";
+        const miGol = mis.find(pr => pr.partido_id === "PREMIO_GOLEADOR");
+        const miMvp = mis.find(pr => pr.partido_id === "PREMIO_MVP");
+        const chip = (titulo, miPick, real) => {
+          if (!real) {
+            return `<div class="chip-resumen chip-pendiente"><b>${titulo}</b><span class="chip-meta">${miPick ? '✏️ ' + miPick.prediccion : 'sin marcar'}</span></div>`;
+          }
+          const acertado = miPick && miPick.prediccion === real;
+          const cls = acertado ? "chip-bien" : "chip-mal";
+          return `<div class="chip-resumen ${cls}"><b>${titulo}</b><span class="chip-meta">${acertado ? '✅ Acertaste' : '❌ ' + (miPick?.prediccion || 'sin marcar')}</span></div>`;
+        };
+        return `
+          <div class="resumen-bloque">
+            <h3>Resumen — Premios individuales</h3>
+            <div class="chips-resumen">
+              ${chip("Máx. Goleador", miGol, goleadorPart?.resultado)}
+              ${chip("MVP", miMvp, mvpPart?.resultado)}
+            </div>
+          </div>`;
+      })()}
     `;
 
     const filaGrupo = p => {

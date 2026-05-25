@@ -47,8 +47,10 @@
     {"id":"laporte","nombre":"Aymeric Laporte","equipo":"ESP","pos":"D","foto":null},
     {"id":"cucurella","nombre":"Marc Cucurella","equipo":"ESP","pos":"D","foto":null},
     {"id":"grimaldo","nombre":"Alejandro Grimaldo","equipo":"ESP","pos":"D","foto":null},
+    {"id":"llorente","nombre":"Marcos Llorente","equipo":"ESP","pos":"D","foto":null},
     {"id":"unai_simon","nombre":"Unai Simón","equipo":"ESP","pos":"P","foto":null},
     {"id":"raya","nombre":"David Raya","equipo":"ESP","pos":"P","foto":null},
+    {"id":"joan_garcia","nombre":"Joan García","equipo":"ESP","pos":"P","foto":null},
 
     {"id":"kane","nombre":"Harry Kane","equipo":"ENG","pos":"F","foto":null},
     {"id":"bellingham","nombre":"Jude Bellingham","equipo":"ENG","pos":"M","foto":null},

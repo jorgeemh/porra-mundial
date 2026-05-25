@@ -108,6 +108,29 @@
   // Final en el centro
   html += `<div class="round round-final round-centro">
     <div class="round-title">${titulos.final}</div>
+    <div class="trofeo-final" aria-hidden="true">
+      <svg viewBox="0 0 64 64" class="trofeo-svg">
+        <defs>
+          <linearGradient id="g-gold" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#fde68a"/>
+            <stop offset="45%" stop-color="#fbbf24"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <!-- Asas -->
+        <path d="M14 14 Q4 16 6 28 Q8 36 18 34" fill="none" stroke="url(#g-gold)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M50 14 Q60 16 58 28 Q56 36 46 34" fill="none" stroke="url(#g-gold)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Copa -->
+        <path d="M16 10 L48 10 L46 30 Q44 42 32 42 Q20 42 18 30 Z" fill="url(#g-gold)" stroke="#78350f" stroke-width="1"/>
+        <!-- Estrella en el cuerpo -->
+        <path d="M32 18 L34 23 L39 23 L35 26 L36 31 L32 28 L28 31 L29 26 L25 23 L30 23 Z" fill="#fff8e1" opacity=".85"/>
+        <!-- Pie -->
+        <rect x="27" y="42" width="10" height="6" fill="url(#g-gold)" stroke="#78350f" stroke-width="1"/>
+        <rect x="20" y="48" width="24" height="5" rx="1" fill="url(#g-gold)" stroke="#78350f" stroke-width="1"/>
+        <rect x="17" y="53" width="30" height="4" rx="1" fill="url(#g-gold)" stroke="#78350f" stroke-width="1"/>
+      </svg>
+      <div class="trofeo-glow"></div>
+    </div>
     ${renderMatch(finalId, true)}
   </div>`;
   // Mitad derecha (del centro hacia fuera)

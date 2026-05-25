@@ -471,11 +471,76 @@ details summary span.contador {
 }
 
 .bmatch.placeholder { opacity: .4; }
-.bmatch.es-final { border-color: #fbbf24; box-shadow: 0 0 0 2px #fbbf24, var(--shadow-md); }
+
+/* ===== FINAL DESTACADA ===== */
+.round-final .round-title {
+  color: #b45309; font-weight: 800; font-size: .78rem; letter-spacing: .15em;
+}
+.bmatch.es-final {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#fffdf6, #fffdf6) padding-box,
+    linear-gradient(135deg, #fde68a, #fbbf24 45%, #b45309) border-box;
+  box-shadow:
+    0 0 0 4px rgba(251, 191, 36, .18),
+    0 18px 36px -10px rgba(180, 83, 9, .35),
+    0 6px 14px rgba(0,0,0,.06);
+  padding: 8px;
+  transform: scale(1.08);
+  position: relative;
+}
+.bmatch.es-final::before {
+  /* Brillo sutil que recorre el borde */
+  content: ""; position: absolute; inset: -2px; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shineFinal 5.5s ease-in-out infinite;
+  pointer-events: none; mix-blend-mode: overlay;
+}
+@keyframes shineFinal {
+  0% { background-position: 200% 0; }
+  60%, 100% { background-position: -100% 0; }
+}
+.bmatch.es-final .bteam { background: #fffaf0; }
+.bmatch.es-final .bteam.ganador {
+  background: linear-gradient(135deg, rgba(251,191,36,.25), rgba(180,83,9,.18));
+  color: #78350f; font-weight: 800;
+}
+
+/* ===== TROFEO ===== */
+.trofeo-final {
+  position: relative;
+  display: flex; justify-content: center; align-items: center;
+  margin: 4px 0 12px;
+  height: 78px;
+}
+.trofeo-svg {
+  width: 64px; height: 64px;
+  filter: drop-shadow(0 6px 8px rgba(180, 83, 9, .35));
+  animation: trofeoFlot 3.5s ease-in-out infinite;
+  position: relative; z-index: 1;
+}
+@keyframes trofeoFlot {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1deg); }
+}
+.trofeo-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(251,191,36,.45), transparent 60%);
+  filter: blur(8px);
+  animation: trofeoGlow 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes trofeoGlow {
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50% { opacity: .9; transform: scale(1.1); }
+}
+
 .campeon-banner {
   background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f;
   font-weight: 800; text-align: center; font-size: .75rem; padding: 4px;
   border-radius: 6px; margin-bottom: 4px; letter-spacing: .04em;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, .3);
 }
 
 /* ---------- RESUMEN DE ACIERTOS (clasificación) ---------- */

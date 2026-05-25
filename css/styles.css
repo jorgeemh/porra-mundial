@@ -428,11 +428,13 @@ details summary span.contador {
   display: flex; gap: 4px; min-width: 1100px; align-items: stretch; padding: 8px 2px;
 }
 .round {
-  flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 6px;
+  flex: 1; display: flex; flex-direction: column; justify-content: space-around;
   min-width: 0;
+  /* IMPORTANTE: sin 'gap'. Con gap, space-around no distribuye uniformemente y los
+     matches de cada ronda no quedan alineados con los puntos medios de la ronda anterior. */
 }
 .round-centro { flex: 0.95; justify-content: center; min-width: 130px; }
-.round-centro .bmatch { transform: scale(1.04); margin: 4px 6px; }
+.round-centro > .bmatch { transform: scale(1.04); margin: 0 6px; }
 .round-title {
   font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
   color: var(--text-faint); text-align: center; margin-bottom: 4px;
@@ -472,6 +474,31 @@ details summary span.contador {
   font-weight: 800; text-align: center; font-size: .75rem; padding: 4px;
   border-radius: 6px; margin-bottom: 4px; letter-spacing: .04em;
 }
+
+/* ---------- RESUMEN DE ACIERTOS (clasificación) ---------- */
+.resumen-bloque { margin-bottom: 18px; }
+.resumen-bloque h3 {
+  font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;
+  font-size: .78rem; letter-spacing: .1em; color: var(--text-faint);
+  margin: 18px 0 10px;
+}
+.chips-resumen {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.chip-resumen {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px; border-radius: 12px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  font-size: .85rem; transition: transform .15s, box-shadow .2s;
+}
+.chip-resumen:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.chip-resumen b { font-size: .82rem; font-weight: 700; }
+.chip-resumen .chip-meta { font-size: .78rem; font-weight: 600; }
+.chip-resumen.chip-bien { background: rgba(16,185,129,.10); border-color: rgba(16,185,129,.35); color: #047857; }
+.chip-resumen.chip-medio { background: rgba(251,191,36,.10); border-color: rgba(251,191,36,.40); color: #92400e; }
+.chip-resumen.chip-mal { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.30); color: #991b1b; }
+.chip-resumen.chip-pendiente { color: var(--text-faint); }
 
 /* ---------- AJUSTES MOBILE ---------- */
 @media (min-width: 600px) {

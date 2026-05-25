@@ -410,8 +410,23 @@
     if (error) mostrarError(error.message); else { ok("Eliminatorias rellenadas 🎲"); await refrescar(); }
   };
   $("#btn-test-reset").onclick = async () => {
-    const c = await Modal.confirm("⚠️ Borrará TODOS los pronósticos y resultados, y dejará la BD lista para empezar el Mundial.", "¿Reset TOTAL?", { okText: "Sí, borrar todo", peligro: true });
-    if (!c) return;
+    // Doble confirmación: primero un aviso, después tipear "BORRAR" exacto.
+    const c1 = await Modal.confirm(
+      "⚠️ Esta acción BORRARÁ TODOS los pronósticos y resultados de TODOS los usuarios. Esta acción no se puede deshacer.\n\nA continuación te pediremos que escribas 'BORRAR' para confirmar.",
+      "¿Reset TOTAL?",
+      { okText: "Continuar", peligro: true }
+    );
+    if (!c1) return;
+    const palabra = await Modal.prompt(
+      "Para confirmar, escribe exactamente la palabra BORRAR (en mayúsculas).",
+      "Última confirmación",
+      { placeholder: "BORRAR" }
+    );
+    if (palabra === null) return;
+    if (palabra !== "BORRAR") {
+      mostrarError("No coincide con 'BORRAR'. Operación cancelada.");
+      return;
+    }
     const { error } = await sb.rpc("admin_reset_todo", { p_usuario_id: sesion.id, p_token: sesion.token });
     if (error) mostrarError(error.message); else { ok("Todo reseteado ♻️"); await refrescar(); }
   };

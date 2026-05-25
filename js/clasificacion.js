@@ -76,6 +76,69 @@
     const grupos = mis.filter(p => partPorId[p.partido_id]?.fase === "grupos");
     const elim = mis.filter(p => partPorId[p.partido_id]?.fase !== "grupos");
 
+    // ===== RESUMEN VISUAL =====
+    // Por grupo: cuántos partidos has acertado / cuántos están resueltos / total
+    const resumenGrupos = {};
+    for (const part of partidos) {
+      if (part.fase !== "grupos" || !part.grupo) continue;
+      (resumenGrupos[part.grupo] ||= { total: 0, resueltos: 0, aciertos: 0 });
+      resumenGrupos[part.grupo].total++;
+      if (part.resultado) {
+        resumenGrupos[part.grupo].resueltos++;
+        const miPick = grupos.find(p => p.partido_id === part.id);
+        if (miPick && miPick.prediccion === part.resultado) {
+          resumenGrupos[part.grupo].aciertos++;
+        }
+      }
+    }
+    // Por ronda eliminatoria
+    const titulosRonda = { r32:"Dieciseisavos", r16:"Octavos", qf:"Cuartos", sf:"Semis", final:"Final" };
+    const resumenElim = {};
+    for (const f of ["r32","r16","qf","sf","final"]) {
+      const partidosFase = partidos.filter(p => p.fase === f);
+      const resueltos = partidosFase.filter(p => p.resultado);
+      if (partidosFase.length === 0) continue;
+      const misPicks = new Set(mis.filter(pr => partPorId[pr.partido_id]?.fase === f).map(pr => pr.prediccion));
+      const ganadoresReales = new Set(resueltos.map(p => p.resultado));
+      let aciertos = 0;
+      for (const eq of misPicks) if (ganadoresReales.has(eq)) aciertos++;
+      resumenElim[f] = { total: partidosFase.length, resueltos: resueltos.length, aciertos };
+    }
+
+    function pct(a, b) { return b === 0 ? 0 : Math.round(a / b * 100); }
+    function chipResumen(label, aciertos, resueltos, total) {
+      if (resueltos === 0) {
+        return `<div class="chip-resumen chip-pendiente"><b>${label}</b><span class="chip-meta">— / ${total}</span></div>`;
+      }
+      const p = pct(aciertos, resueltos);
+      const cls = p >= 70 ? "chip-bien" : p >= 40 ? "chip-medio" : "chip-mal";
+      return `<div class="chip-resumen ${cls}">
+        <b>${label}</b>
+        <span class="chip-meta">${aciertos}/${resueltos} <span style="opacity:.6">de ${total}</span></span>
+      </div>`;
+    }
+    const resumenHtml = `
+      <div class="resumen-bloque">
+        <h3>Resumen — Fase de grupos</h3>
+        <div class="chips-resumen">
+          ${Object.keys(resumenGrupos).sort().map(g => {
+            const r = resumenGrupos[g];
+            return chipResumen("Grupo " + g, r.aciertos, r.resueltos, r.total);
+          }).join("") || '<p class="sub">Aún no hay partidos de grupos.</p>'}
+        </div>
+      </div>
+      ${Object.keys(resumenElim).length > 0 ? `
+      <div class="resumen-bloque">
+        <h3>Resumen — Eliminatorias</h3>
+        <div class="chips-resumen">
+          ${Object.keys(resumenElim).map(f => {
+            const r = resumenElim[f];
+            return chipResumen(titulosRonda[f], r.aciertos, r.resueltos, r.total);
+          }).join("")}
+        </div>
+      </div>` : ""}
+    `;
+
     const filaGrupo = p => {
       const part = partPorId[p.partido_id]; if (!part) return "";
       const pred = p.prediccion === "A" ? part.equipo_a : p.prediccion === "B" ? part.equipo_b : "Empate";
@@ -94,6 +157,7 @@
     };
 
     $("#detalle").innerHTML = `
+      ${resumenHtml}
       <h3>Fase de grupos</h3>
       <table class="tabla-detalle"><thead><tr><th>Partido</th><th>Tu pick</th><th>Real</th></tr></thead>
         <tbody>${grupos.map(filaGrupo).join("") || "<tr><td colspan='3'>Sin pronósticos</td></tr>"}</tbody></table>

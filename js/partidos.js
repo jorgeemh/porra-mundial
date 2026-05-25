@@ -129,7 +129,8 @@
     const porGrupo = {};
     for (const p of partidosGrupos) (porGrupo[p.grupo] ||= []).push(p);
 
-    const disabled = !editMode || grupoCerrado;
+    const disabledGlobal = !editMode || grupoCerrado;
+    const ahora = new Date();
 
     const html = Object.keys(porGrupo).sort().map(g => {
       const equiposGrupo = Array.from(new Set(porGrupo[g].flatMap(p => [p.equipo_a, p.equipo_b])));
@@ -146,9 +147,13 @@
             const acertado = !!(real && mi && mi === real);
             const estadoCls = fallado ? 'fallada' : (acertado ? 'acertada' : '');
             const resultCls = fallado ? 'fallado' : '';
+            // Cierre por partido: si la hora ya pasó, este partido está bloqueado
+            const partidoEmpezado = p.fecha_hora && new Date(p.fecha_hora) <= ahora;
+            const disabled = disabledGlobal || partidoEmpezado;
+            const cerradoLabel = partidoEmpezado && !real ? ' · 🔒 Cerrado' : '';
             return `
-              <div class="partido ${disabled ? 'cerrado':''}">
-                <div class="fecha">${new Date(p.fecha_hora).toLocaleString("es-ES",{weekday:"short", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"})}</div>
+              <div class="partido ${disabled ? 'cerrado':''}" data-partido-id="${p.id}">
+                <div class="fecha">${new Date(p.fecha_hora).toLocaleString("es-ES",{weekday:"short", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"})}${cerradoLabel}</div>
                 ${real ? `<div class="resultado-real ${resultCls}">Resultado: <b>${p.goles_a}-${p.goles_b}</b> (${real==='A'?eqA.nombre:real==='B'?eqB.nombre:'Empate'})</div>` : ""}
                 <div class="opciones" data-partido="${p.id}">
                   <button class="op ${mi==='A'?'activa':''} ${mi==='A'?estadoCls:''}" data-pick="A" ${disabled?'disabled':''}>${eqA.flag} ${eqA.nombre}</button>
@@ -163,8 +168,9 @@
     $("#grupos").innerHTML = html;
 
     // Listeners para marcar pick (solo si editMode) — actualización LOCAL sin re-render
-    if (!disabled) {
-      $$("#grupos .opciones .op").forEach(btn => {
+    if (!disabledGlobal) {
+      // Solo botones NO disabled (los individuales bloqueados por cierre de partido ya tienen el attr)
+      $$("#grupos .opciones .op:not([disabled])").forEach(btn => {
         btn.addEventListener("click", () => {
           const opciones = btn.parentElement;
           const partidoId = opciones.dataset.partido;

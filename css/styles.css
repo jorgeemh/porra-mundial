@@ -165,6 +165,64 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
 .ok { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
 .ok::before { content: "✅"; }
 
+/* ---------- TABS PRONÓSTICOS ---------- */
+.pron-tabs {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 18px;
+}
+.pron-tab {
+  display: flex; align-items: center; gap: 12px; text-align: left;
+  padding: 14px 16px; border-radius: var(--radius);
+  background: var(--surface); color: var(--text-dim);
+  border: 1.5px solid var(--border); box-shadow: var(--shadow-sm);
+  background-image: none;
+  cursor: pointer; transition: all .2s ease;
+  font-family: inherit;
+  position: relative; overflow: hidden;
+}
+.pron-tab::before {
+  content: ""; position: absolute; inset: 0;
+  background: var(--grad-primary); opacity: 0;
+  transition: opacity .25s ease; z-index: 0;
+}
+.pron-tab > * { position: relative; z-index: 1; }
+.pron-tab:hover:not(:disabled):not(.activo) {
+  border-color: var(--border-strong); transform: translateY(-2px);
+  box-shadow: var(--shadow-md); color: var(--text);
+}
+.pron-tab.activo {
+  color: #fff; border-color: transparent;
+  box-shadow: 0 8px 24px rgba(236,72,153,.35);
+  transform: translateY(-1px);
+}
+.pron-tab.activo::before { opacity: 1; }
+.pron-tab.bloqueado {
+  opacity: .55; cursor: not-allowed;
+  background: var(--surface-2);
+}
+.pron-tab.bloqueado:hover { transform: none; box-shadow: var(--shadow-sm); }
+.pron-tab-icon {
+  font-size: 1.7rem; line-height: 1; flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.08));
+}
+.pron-tab-info { flex: 1; min-width: 0; }
+.pron-tab-title {
+  font-size: .95rem; font-weight: 700; letter-spacing: -.01em;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.pron-tab-counter {
+  font-size: .78rem; font-weight: 600; opacity: .85; margin-top: 2px;
+}
+.pron-tab.activo .pron-tab-counter { opacity: .95; }
+.pron-panel { animation: fadeUp .35s ease-out; }
+
+@media (max-width: 480px) {
+  .pron-tab { padding: 12px; gap: 10px; }
+  .pron-tab-icon { font-size: 1.4rem; }
+  .pron-tab-title { font-size: .88rem; }
+  .pron-tab-counter { font-size: .72rem; }
+}
+
 /* ---------- GRUPOS ---------- */
 .grupo {
   background: var(--surface-2);
@@ -207,6 +265,9 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
   font-size: .8rem; color: #065f46; margin-top: 8px;
   background: #d1fae5; padding: 4px 10px; border-radius: 8px; display: inline-block; font-weight: 600;
 }
+.resultado-real.fallado {
+  color: #991b1b; background: #fee2e2;
+}
 
 .opciones, .opciones-elim { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; margin-top: 12px; }
 .opciones .op, .opciones-elim .op {
@@ -227,14 +288,33 @@ button.peligro:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(239,68,68,.35)
   background: #10b981; color: #fff; border-color: #10b981;
   box-shadow: 0 4px 12px rgba(16,185,129,.3);
 }
+.opciones .op.activa.fallada, .opciones-elim .op.activa.fallada {
+  background: #ef4444; border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239,68,68,.3);
+}
+.opciones .op.activa.fallada:hover:not(:disabled), .opciones-elim .op.activa.fallada:hover:not(:disabled) {
+  background: #dc2626; border-color: #dc2626;
+}
 .opciones .op[data-pick="EMPATE"] { font-size: .8rem; opacity: .9; }
 .opciones-elim { grid-template-columns: 1fr 1fr; }
 
 /* ---------- BRACKET ---------- */
-.ronda { display: grid; gap: 10px; margin-bottom: 18px; }
+.ronda { display: grid; gap: 10px; margin-bottom: 0; }
 .partido-elim {
   background: #fff; border: 1px solid var(--border);
   border-radius: var(--radius); padding: 12px;
+}
+.ronda-grupo summary { text-transform: none; }
+.ronda-grupo > summary { font-family: 'Space Grotesk', sans-serif; }
+.ronda-contador {
+  background: var(--surface-2); color: var(--text-dim);
+  padding: 3px 10px; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .02em;
+  border: 1px solid var(--border);
+}
+.ronda-contador.completa {
+  background: var(--grad-success); color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px rgba(16,185,129,.25);
 }
 
 /* ---------- TABLAS ---------- */

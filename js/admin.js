@@ -320,6 +320,42 @@
     });
   }
 
+  // ---------- 2b) Bloquear pronósticos de grupos ----------
+  async function refrescarEstadoGruposBloqueados() {
+    const { data, error } = await sb.from("config").select("*").eq("clave","grupos_bloqueados").maybeSingle();
+    const bloq = !error && data && data.valor === "true";
+    const lbl = $("#estado-bloqueo-grupos");
+    const btnB = $("#btn-bloquear-grupos");
+    const btnD = $("#btn-desbloquear-grupos");
+    if (!lbl || !btnB || !btnD) return;
+    if (bloq) {
+      lbl.innerHTML = "🔒 Pronósticos de grupos <b>bloqueados</b>.";
+      lbl.style.color = "#b91c1c";
+      btnB.style.display = "none";
+      btnD.style.display = "inline-block";
+    } else {
+      lbl.innerHTML = "🟢 Pronósticos de grupos <b>abiertos</b> (se cerrarán automáticamente al pasar la fecha límite).";
+      lbl.style.color = "";
+      btnB.style.display = "inline-block";
+      btnD.style.display = "none";
+    }
+  }
+  $("#btn-bloquear-grupos").onclick = async () => {
+    const c = await Modal.confirm("Tras esto nadie podrá modificar sus pronósticos de la fase de grupos.", "¿Bloquear pronósticos de grupos?", { okText: "Bloquear", peligro: true });
+    if (!c) return;
+    const { error } = await sb.rpc("admin_bloquear_grupos", { p_usuario_id: sesion.id, p_token: sesion.token });
+    if (error) mostrarError(error.message);
+    else { ok("Pronósticos de grupos bloqueados 🔒"); refrescarEstadoGruposBloqueados(); }
+  };
+  $("#btn-desbloquear-grupos").onclick = async () => {
+    const c = await Modal.confirm("Los usuarios podrán volver a editar sus pronósticos de grupos (mientras no se haya pasado la fecha límite).", "¿Desbloquear?", { okText: "Desbloquear" });
+    if (!c) return;
+    const { error } = await sb.rpc("admin_desbloquear_grupos", { p_usuario_id: sesion.id, p_token: sesion.token });
+    if (error) mostrarError(error.message);
+    else { ok("Pronósticos de grupos desbloqueados 🔓"); refrescarEstadoGruposBloqueados(); }
+  };
+  refrescarEstadoGruposBloqueados();
+
   // ---------- 5) Bloquear bracket ----------
   $("#btn-bloquear").onclick = async () => {
     const c = await Modal.confirm("Tras esto nadie podrá cambiar su cuadro eliminatorio.", "¿Bloquear bracket?", { okText: "Bloquear", peligro: true });

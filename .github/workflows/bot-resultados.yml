@@ -1,0 +1,61 @@
+name: Bot resultados Mundial 2026
+
+# Corre cada 30 minutos durante el Mundial (11 jun → 19 jul 2026).
+# Fuera de esas fechas el cron no se ejecuta (lo controla la condición 'if').
+#
+# También se puede lanzar manualmente desde la pestaña Actions del repo
+# (workflow_dispatch) para hacer pruebas en cualquier momento.
+
+on:
+  schedule:
+    # Cada 30 min, 24/7. La condición de fecha la pone el job.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Si true, solo imprime los partidos detectados pero no los manda a Supabase"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    # Solo correr si estamos dentro del periodo del Mundial
+    # (o si es disparo manual workflow_dispatch)
+    if: github.event_name == 'workflow_dispatch' || (github.event.schedule && github.run_id != '')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Comprobar si estamos en el periodo del Mundial
+        id: ventana
+        run: |
+          hoy=$(date +%Y-%m-%d)
+          inicio="2026-06-11"
+          fin="2026-07-20"
+          if [[ "$hoy" < "$inicio" || "$hoy" > "$fin" ]]; then
+            if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+              echo "Hoy ($hoy) está fuera del periodo del Mundial ($inicio → $fin). Saltando."
+              echo "skip=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        if: steps.ventana.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Ejecutar bot
+        if: steps.ventana.outputs.skip != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          BOT_KEY: ${{ secrets.BOT_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
+        run: python scripts/bot_resultados.py

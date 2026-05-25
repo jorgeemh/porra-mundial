@@ -7,6 +7,52 @@
 
   const PUNTOS = window.PORRA_CONFIG.PUNTOS;
 
+  // ----- Explicación dinámica de la puntuación -----
+  (function renderExplicacionPuntos() {
+    const el = $("#explicacion-puntos-body");
+    if (!el) return;
+    el.innerHTML = `
+      <p class="explicacion-intro">
+        Tu puntuación final es la suma de todos los aciertos en las distintas fases del torneo
+        más los premios individuales. <b>Cuanto más avanzada es la fase, más puntos vale acertar.</b>
+      </p>
+
+      <div class="puntos-tabla">
+        <h4>⚽ Fase de grupos</h4>
+        <ul>
+          <li><b>${PUNTOS.grupos} pto</b> por cada partido en el que aciertes el resultado (gana A, empate, o gana B). No hace falta marcador exacto.</li>
+        </ul>
+
+        <h4>🏆 Cuadro eliminatorio</h4>
+        <p class="explicacion-nota">Aquí lo que cuenta es predecir <b>qué selecciones avanzan</b> a cada ronda. Por cada equipo que pongas en tu bracket y que efectivamente alcance esa ronda, ganas:</p>
+        <ul>
+          <li><b>${PUNTOS.r32} ptos</b> · por cada equipo que llegue a octavos (dieciseisavos resueltos)</li>
+          <li><b>${PUNTOS.r16} ptos</b> · por cada equipo que llegue a cuartos</li>
+          <li><b>${PUNTOS.qf} ptos</b> · por cada equipo que llegue a semifinales</li>
+          <li><b>${PUNTOS.sf} ptos</b> · por cada equipo que llegue a la final</li>
+          <li><b>${PUNTOS.final} ptos</b> · si aciertas el campeón del Mundial</li>
+        </ul>
+
+        <h4>⭐ Premios individuales</h4>
+        <ul>
+          <li><b>${PUNTOS.goleador} ptos</b> · si aciertas el máximo goleador del torneo</li>
+          <li><b>${PUNTOS.mvp} ptos</b> · si aciertas el MVP del torneo</li>
+        </ul>
+      </div>
+
+      <div class="puntos-ejemplo">
+        <b>📌 Ejemplo de máximo teórico</b><br>
+        72 partidos de grupos × ${PUNTOS.grupos} + 16 picks correctos en r32 × ${PUNTOS.r32} + 8 × ${PUNTOS.r16} + 4 × ${PUNTOS.qf} + 2 × ${PUNTOS.sf} + 1 × ${PUNTOS.final} + ${PUNTOS.goleador} + ${PUNTOS.mvp}
+        = <b>${72*PUNTOS.grupos + 16*PUNTOS.r32 + 8*PUNTOS.r16 + 4*PUNTOS.qf + 2*PUNTOS.sf + PUNTOS.final + PUNTOS.goleador + PUNTOS.mvp} puntos</b>
+        si lo aciertas absolutamente todo.
+      </div>
+
+      <p class="explicacion-nota" style="margin-top:14px">
+        <b>Desempate:</b> en caso de empate a puntos, gana quien tenga más aciertos totales. Si persiste el empate, orden alfabético.
+      </p>
+    `;
+  })();
+
   const [usuariosRes, partidosRes, pronRes] = await Promise.all([
     sb.from("usuarios_publico").select("*"),
     sb.from("partidos").select("*"),

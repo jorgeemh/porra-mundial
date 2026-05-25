@@ -667,6 +667,72 @@ details summary span.contador {
   box-shadow: 0 2px 6px rgba(180, 83, 9, .3);
 }
 
+/* ---------- EXPLICACIÓN DE PUNTOS (clasificación) ---------- */
+.explicacion-puntos { padding: 0; overflow: hidden; }
+.explicacion-puntos summary {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 22px; cursor: pointer; user-select: none;
+  list-style: none; transition: background .15s;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.explicacion-puntos summary::-webkit-details-marker { display: none; }
+.explicacion-puntos summary:hover { background: var(--surface-2); }
+.explicacion-icono {
+  font-size: 1.4rem;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--grad-primary); border-radius: 10px;
+  filter: drop-shadow(0 2px 4px rgba(236,72,153,.25));
+}
+.explicacion-icono { color: #fff; }
+.explicacion-titulo {
+  flex: 1; font-weight: 700; font-size: 1rem; color: var(--text);
+}
+.explicacion-flecha {
+  font-size: .7rem; color: var(--text-faint);
+  transition: transform .25s ease;
+}
+.explicacion-puntos[open] .explicacion-flecha { transform: rotate(180deg); }
+.explicacion-contenido {
+  padding: 0 22px 22px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp .25s ease-out;
+}
+.explicacion-contenido h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: .95rem; font-weight: 700; margin: 20px 0 6px;
+  color: var(--text); text-transform: none; letter-spacing: 0;
+}
+.explicacion-contenido h4:first-of-type { margin-top: 18px; }
+.explicacion-intro {
+  margin: 16px 0 0; padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(236,72,153,.08), rgba(139,92,246,.05));
+  border-radius: 12px;
+  font-size: .92rem; color: var(--text-dim);
+}
+.explicacion-contenido ul {
+  margin: 4px 0 8px; padding-left: 4px; list-style: none;
+}
+.explicacion-contenido li {
+  padding: 6px 10px; margin: 4px 0;
+  background: var(--surface-2); border-radius: 8px;
+  font-size: .9rem; color: var(--text-dim);
+  border-left: 3px solid var(--primary);
+}
+.explicacion-contenido li b { color: var(--primary-2); font-weight: 700; }
+.explicacion-nota {
+  font-size: .85rem; color: var(--text-faint); margin: 6px 0;
+  font-style: italic;
+}
+.puntos-ejemplo {
+  margin-top: 18px; padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(251,191,36,.10), rgba(245,158,11,.05));
+  border: 1px dashed #f59e0b;
+  border-radius: 12px;
+  font-size: .88rem; color: var(--text-dim); line-height: 1.55;
+}
+.puntos-ejemplo b { color: #b45309; }
+
 /* ---------- RESUMEN DE ACIERTOS (clasificación) ---------- */
 .resumen-bloque { margin-bottom: 18px; }
 .resumen-bloque h3 {

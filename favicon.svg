@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="38%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo cuadrado redondeado con el gradiente de marca -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <!-- Balón de fútbol -->
+  <circle cx="32" cy="32" r="20" fill="url(#ball)" stroke="#1f2937" stroke-width="1.4"/>
+
+  <!-- Pentágono central -->
+  <polygon points="32,22 41,29 37,40 27,40 23,29" fill="#1f2937"/>
+
+  <!-- Líneas radiales (costuras del balón) -->
+  <path d="M32 22 L32 14" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+  <path d="M41 29 L49 26" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+  <path d="M23 29 L15 26" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+  <path d="M37 40 L41 49" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+  <path d="M27 40 L23 49" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- "26" pequeño abajo a la derecha para el año -->
+  <text x="50" y="58" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#fbbf24" text-anchor="middle" style="paint-order:stroke; stroke:#1f2937; stroke-width:2.5; stroke-linejoin:round">26</text>
+</svg>

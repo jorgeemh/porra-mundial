@@ -53,10 +53,11 @@
     `;
   })();
 
-  const [usuariosRes, partidosRes, pronRes] = await Promise.all([
+  const [usuariosRes, partidosRes, pronRes, jugadoresJson] = await Promise.all([
     sb.from("usuarios_publico").select("*"),
     sb.from("partidos").select("*"),
-    sb.from("pronosticos").select("*")
+    sb.from("pronosticos").select("*"),
+    fetch("data/jugadores.json").then(r=>r.json()).catch(()=>null)
   ]);
   if (usuariosRes.error || partidosRes.error || pronRes.error) {
     mostrarError("Error cargando datos."); return;
@@ -70,6 +71,19 @@
   const partPorId = Object.fromEntries(partidos.map(p => [p.id, p]));
   const pronPorUsuario = {};
   for (const p of pron) (pronPorUsuario[p.usuario_id] ||= []).push(p);
+
+  // Lookup de jugadores (para premios). Si jugadores.json no carga, queda vacío y fallback al ID.
+  const jugadorPorId = {};
+  if (jugadoresJson && Array.isArray(jugadoresJson.jugadores)) {
+    for (const j of jugadoresJson.jugadores) jugadorPorId[j.id] = j;
+  }
+  function jugadorLabel(id) {
+    if (!id) return "—";
+    const j = jugadorPorId[id];
+    if (!j) return id;  // fallback al id si no se encuentra
+    const flag = (typeof equipo === "function" && j.equipo) ? equipo(j.equipo).flag : "";
+    return `${flag} ${j.nombre}`;
+  }
 
   // Calcular puntos por usuario
   const filas = usuarios.map(u => {
@@ -205,11 +219,12 @@
         const miMvp = mis.find(pr => pr.partido_id === "PREMIO_MVP");
         const chip = (titulo, miPick, real) => {
           if (!real) {
-            return `<div class="chip-resumen chip-pendiente"><b>${titulo}</b><span class="chip-meta">${miPick ? '✏️ ' + miPick.prediccion : 'sin marcar'}</span></div>`;
+            return `<div class="chip-resumen chip-pendiente"><b>${titulo}</b><span class="chip-meta">${miPick ? '✏️ ' + jugadorLabel(miPick.prediccion) : 'sin marcar'}</span></div>`;
           }
           const acertado = miPick && miPick.prediccion === real;
           const cls = acertado ? "chip-bien" : "chip-mal";
-          return `<div class="chip-resumen ${cls}"><b>${titulo}</b><span class="chip-meta">${acertado ? '✅ Acertaste' : '❌ ' + (miPick?.prediccion || 'sin marcar')}</span></div>`;
+          const realLabel = jugadorLabel(real);
+          return `<div class="chip-resumen ${cls}"><b>${titulo}</b><span class="chip-meta">${acertado ? '✅ ' + realLabel : '❌ ' + (miPick ? jugadorLabel(miPick.prediccion) : 'sin marcar')}</span></div>`;
         };
         return `
           <div class="resumen-bloque">
@@ -222,21 +237,45 @@
       })()}
     `;
 
+    // Helper: render bandera + nombre de un equipo (usa equipo() de teams.js)
+    const eqLabel = (codigo) => {
+      if (!codigo) return "—";
+      const e = (typeof equipo === "function") ? equipo(codigo) : null;
+      if (!e) return codigo;
+      return `<span class="g-flag">${e.flag}</span>${e.nombre}`;
+    };
+
     const filaGrupo = p => {
       const part = partPorId[p.partido_id]; if (!part) return "";
-      const pred = p.prediccion === "A" ? part.equipo_a : p.prediccion === "B" ? part.equipo_b : "Empate";
+      const partidoCell = `${eqLabel(part.equipo_a)} <span style="color:var(--text-faint)">vs</span> ${eqLabel(part.equipo_b)}`;
+      let pred;
+      if (p.prediccion === "A") pred = eqLabel(part.equipo_a);
+      else if (p.prediccion === "B") pred = eqLabel(part.equipo_b);
+      else pred = `<span class="g-flag">🤝</span>Empate`;
       let resReal = "—", icono = "";
       if (part.resultado) {
-        resReal = part.resultado === "A" ? part.equipo_a : part.resultado === "B" ? part.equipo_b : "Empate";
-        icono = part.resultado === p.prediccion ? "✅" : "❌";
+        if (part.resultado === "A") resReal = eqLabel(part.equipo_a);
+        else if (part.resultado === "B") resReal = eqLabel(part.equipo_b);
+        else resReal = `<span class="g-flag">🤝</span>Empate`;
+        icono = part.resultado === p.prediccion ? " ✅" : " ❌";
       }
-      return `<tr><td>${part.equipo_a} vs ${part.equipo_b}</td><td>${pred}</td><td>${resReal} ${icono}</td></tr>`;
+      return `<tr><td>${partidoCell}</td><td>${pred}</td><td>${resReal}${icono}</td></tr>`;
     };
+
     const filaElim = p => {
       const part = partPorId[p.partido_id]; if (!part) return "";
-      const resReal = part.resultado || "—";
-      const icono = part.resultado ? (part.resultado === p.prediccion ? "✅" : "❌") : "";
-      return `<tr><td>${part.fase.toUpperCase()} (${part.id})</td><td>${p.prediccion}</td><td>${resReal} ${icono}</td></tr>`;
+      const rondaLabel = titulosRonda[part.fase] || part.fase.toUpperCase();
+      // Si conocemos los dos equipos del partido, mostramos el matchup debajo
+      const matchupSub = (part.equipo_a && part.equipo_b)
+        ? `<div style="font-size:.78em; color:var(--text-faint); margin-top:2px">${eqLabel(part.equipo_a)} vs ${eqLabel(part.equipo_b)}</div>`
+        : "";
+      const predCell = eqLabel(p.prediccion);
+      let resReal = "—", icono = "";
+      if (part.resultado) {
+        resReal = eqLabel(part.resultado);
+        icono = part.resultado === p.prediccion ? " ✅" : " ❌";
+      }
+      return `<tr><td><b>${rondaLabel}</b>${matchupSub}</td><td>${predCell}</td><td>${resReal}${icono}</td></tr>`;
     };
 
     $("#detalle").innerHTML = `

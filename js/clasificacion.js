@@ -154,8 +154,28 @@
 
   function renderDetalle(uid) {
     const mis = pronPorUsuario[uid] || [];
-    const grupos = mis.filter(p => partPorId[p.partido_id]?.fase === "grupos");
-    const elim = mis.filter(p => partPorId[p.partido_id]?.fase !== "grupos");
+    // Orden de fases para eliminatorias
+    const ordenFase = { r32: 1, r16: 2, qf: 3, sf: 4, final: 5 };
+
+    // Grupos: ordenados por partido_id alfabéticamente (= mismo orden que la página de
+    // pronósticos: G_A_1, G_A_2, ..., G_A_6, G_B_1, ..., G_L_6).
+    const grupos = mis
+      .filter(p => partPorId[p.partido_id]?.fase === "grupos")
+      .sort((a, b) => a.partido_id.localeCompare(b.partido_id, undefined, { numeric: true }));
+
+    // Eliminatorias: solo fases reales (r32, r16, qf, sf, final), excluyendo premios.
+    // Ordenado por fase y luego por id del partido.
+    const elim = mis
+      .filter(p => {
+        const f = partPorId[p.partido_id]?.fase;
+        return f && f !== "grupos" && f !== "premio";
+      })
+      .sort((a, b) => {
+        const fa = ordenFase[partPorId[a.partido_id].fase] || 99;
+        const fb = ordenFase[partPorId[b.partido_id].fase] || 99;
+        if (fa !== fb) return fa - fb;
+        return a.partido_id.localeCompare(b.partido_id, undefined, { numeric: true });
+      });
 
     // ===== RESUMEN VISUAL =====
     // Por grupo: cuántos partidos has acertado / cuántos están resueltos / total

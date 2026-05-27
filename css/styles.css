@@ -453,6 +453,21 @@ table { width: 100%; border-collapse: collapse; }
 .tabla-clasif tr:hover { background: var(--surface-2); }
 .tabla-clasif td:first-child { font-weight: 700; color: var(--primary); }
 
+/* Celda de picks (X/72) */
+.picks-cell {
+  display: inline-flex; align-items: baseline; gap: 1px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600; color: var(--text-dim);
+  padding: 3px 9px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: .82rem;
+}
+.picks-cell .picks-sep { opacity: .5; margin: 0 2px; }
+.picks-cell.completo {
+  background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.4); color: #047857;
+}
+.picks-cell.completo::after { content: " ✓"; font-weight: 700; }
+
 /* ---------- BOTONES FLOTANTES ---------- */
 .botones-flotantes {
   position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);

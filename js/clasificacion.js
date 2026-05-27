@@ -85,10 +85,15 @@
     return `${flag} ${j.nombre}`;
   }
 
+  // Total de partidos de grupos posibles (debería ser 72)
+  const totalGrupos = partidos.filter(p => p.fase === "grupos").length;
+
   // Calcular puntos por usuario
   const filas = usuarios.map(u => {
     const mis = pronPorUsuario[u.id] || [];
     let aciertos = 0, puntos = 0;
+    // Contar picks de grupos
+    const picksGrupos = mis.filter(pr => partPorId[pr.partido_id]?.fase === "grupos").length;
     // Grupos: 1 punto por match correcto
     for (const pr of mis) {
       const part = partPorId[pr.partido_id];
@@ -127,16 +132,19 @@
       }
     }
 
-    return { id: u.id, nombre: u.nombre, aciertos, puntos };
+    return { id: u.id, nombre: u.nombre, aciertos, puntos, picksGrupos };
   });
 
   filas.sort((a,b) => b.puntos - a.puntos || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
 
-  $("#tabla-body").innerHTML = filas.map((f,i) => `
-    <tr ${f.id===sesion.id?'class="yo"':''}>
-      <td>${i+1}</td><td>${f.nombre}</td><td>${f.aciertos}</td><td><b>${f.puntos}</b></td>
-    </tr>
-  `).join("") || "<tr><td colspan='4'>Sin participantes aún</td></tr>";
+  $("#tabla-body").innerHTML = filas.map((f,i) => {
+    const completo = f.picksGrupos === totalGrupos && totalGrupos > 0;
+    const picksCell = `<span class="picks-cell ${completo ? 'completo' : ''}">${f.picksGrupos}<span class="picks-sep">/</span>${totalGrupos}</span>`;
+    return `
+      <tr ${f.id===sesion.id?'class="yo"':''}>
+        <td>${i+1}</td><td>${f.nombre}</td><td>${picksCell}</td><td>${f.aciertos}</td><td><b>${f.puntos}</b></td>
+      </tr>`;
+  }).join("") || "<tr><td colspan='5'>Sin participantes aún</td></tr>";
 
   // Selector de detalle
   const sel = $("#select-usuario");

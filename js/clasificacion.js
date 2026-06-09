@@ -53,10 +53,31 @@
     `;
   })();
 
+  // Trae TODOS los pronósticos paginando (Supabase devuelve máximo 1000 por consulta).
+  // Con 17+ usuarios y hasta 104 picks cada uno se superan fácil las 1000 filas, así que
+  // hay que pedirlos en bloques hasta traerlos todos. Si no, a algunos usuarios les
+  // faltarían picks y los puntos se calcularían mal.
+  async function fetchTodosPronosticos() {
+    const PAGE = 1000;
+    let desde = 0;
+    let acumulado = [];
+    while (true) {
+      const { data, error } = await sb
+        .from("pronosticos").select("*")
+        .order("id")  // orden estable para que la paginación no repita ni salte filas
+        .range(desde, desde + PAGE - 1);
+      if (error) return { data: null, error };
+      acumulado = acumulado.concat(data);
+      if (data.length < PAGE) break;  // última página
+      desde += PAGE;
+    }
+    return { data: acumulado, error: null };
+  }
+
   const [usuariosRes, partidosRes, pronRes, jugadoresJson] = await Promise.all([
     sb.from("usuarios_publico").select("*"),
     sb.from("partidos").select("*"),
-    sb.from("pronosticos").select("*"),
+    fetchTodosPronosticos(),
     fetch("data/jugadores.json").then(r=>r.json()).catch(()=>null)
   ]);
   if (usuariosRes.error || partidosRes.error || pronRes.error) {

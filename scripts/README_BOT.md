@@ -107,10 +107,16 @@ y verás los logs completos.
 
 ### El bot mete un resultado MAL
 
-Sin problema. Ve a tu panel admin (admin.html → sección "Resultados de grupos")
-y corrige el resultado a mano. El bot tiene una protección que NO sobrescribe
-resultados que ya están metidos (a menos que ESPN devuelva goles distintos a los
-que hay), así que tu corrección manual se queda.
+Sin problema. Ve a tu panel admin y corrige el resultado a mano.
+
+🔒 **BLINDAJE (parche 09)**: el bot SOLO rellena partidos que aún no tienen
+resultado. En cuanto un partido tiene resultado —lo metieras tú a mano o el
+propio bot— el bot NO lo vuelve a tocar NUNCA, aunque ESPN diga algo distinto.
+Así que tu corrección manual queda fijada para siempre.
+
+Además, no hay que preocuparse de que se "descuadren los puntos": los puntos NO
+se almacenan, se calculan en tiempo real cada vez que alguien abre la
+clasificación. Corriges un resultado → todos ven los puntos correctos al instante.
 
 ---
 
@@ -125,17 +131,26 @@ que hay), así que tu corrección manual se queda.
 
 ---
 
-## 📅 Qué pasa con las eliminatorias
+## 📅 Eliminatorias (automáticas desde el parche 09)
 
-Por ahora el bot **SOLO mete resultados de fase de grupos**. Los partidos
-eliminatorios los sigues metiendo tú a mano desde el panel admin.
+El bot ahora también mete los resultados de eliminatorias, una vez que hayas
+pulsado "Generar cuadro eliminatorio" en el admin. Cómo funciona:
 
-**Razón**: las eliminatorias se generan dinámicamente con
-`admin_generar_eliminatorias` y los IDs (R32_1, R32_2…) no se pueden mapear
-de forma automática con los partidos de ESPN. Hace falta un paso adicional
-de identificación (que se podría montar pero añade complejidad).
+1. Lee de la base de datos los partidos de eliminatoria que ya tienen los dos
+   equipos definidos y aún sin resultado.
+2. Los busca en ESPN por equipos (en eliminación directa, dos equipos solo se
+   enfrentan una vez, así que el emparejamiento es inequívoco).
+3. Lee el campo `winner` de ESPN para saber quién pasó. **Esto incluye los
+   penaltis**: si un partido acaba 1-1 y se decide en la tanda, ESPN marca como
+   ganador al equipo que avanzó, y el bot lo registra correctamente.
+4. Mete el ganador, que se propaga automáticamente a la siguiente ronda.
 
-Si quieres que también automatice las eliminatorias, dímelo y miramos cómo.
+Se resuelve solo ronda a ronda: cuando acaben los dieciseisavos, en la siguiente
+pasada el bot verá los octavos (ya con equipos) y los procesará.
+
+**Lo único manual** sigue siendo pulsar "Generar cuadro eliminatorio" cuando
+termine la fase de grupos (porque ahí decides tú el momento) y, al final del
+torneo, marcar el goleador y MVP reales.
 
 ---
 

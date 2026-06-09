@@ -145,15 +145,49 @@ def fetch_partidos_espn():
             except (ValueError, TypeError):
                 continue
 
+            # Ganador según el campo "winner" de ESPN. En eliminatorias esto refleja
+            # quién AVANZÓ (incluye prórroga y penaltis), no solo el marcador de 90 min.
+            ganador_codigo = None
+            if home.get("winner") is True:
+                ganador_codigo = equipo_a_codigo
+            elif away.get("winner") is True:
+                ganador_codigo = equipo_b_codigo
+
             finalizados.append({
                 "fecha_iso": event.get("date"),
                 "equipo_local": equipo_a_codigo,
                 "equipo_visitante": equipo_b_codigo,
                 "goles_local": goles_home,
                 "goles_visitante": goles_away,
+                "ganador": ganador_codigo,
                 "espn_id": event.get("id"),
             })
     return finalizados
+
+
+# ----------------------------------------
+# Leer partidos de ELIMINATORIA pendientes desde nuestra base de datos.
+# (Sus equipos se rellenan dinámicamente tras "Generar cuadro", por eso no
+#  están en partidos.json y hay que consultarlos en Supabase.)
+# ----------------------------------------
+def fetch_elim_pendientes():
+    """Devuelve partidos elim con ambos equipos definidos y sin resultado todavía."""
+    url = (f"{SUPABASE_URL}/rest/v1/partidos"
+           f"?select=id,fase,equipo_a,equipo_b,fecha_hora,resultado"
+           f"&fase=in.(r32,r16,qf,sf,final)"
+           f"&resultado=is.null"
+           f"&equipo_a=not.is.null"
+           f"&equipo_b=not.is.null")
+    req = Request(url, headers={
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+    })
+    try:
+        with urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except (HTTPError, URLError) as e:
+        log(f"No se pudieron leer eliminatorias de Supabase: {e}", "WARN")
+        return []
 
 
 # ----------------------------------------
@@ -239,10 +273,66 @@ def main():
             errores += 1
             log(f"   ❌ RPC error: {info}", "ERROR")
 
-    log("─" * 50)
-    log(f"Resumen: ✅ {actualizados} actualizados · ⚠️ {no_matcheados} sin match · ❌ {errores} errores · 🔵 {sin_cambio} dry-run")
+    log(f"── Grupos: ✅ {actualizados} actualizados · ⚠️ {no_matcheados} sin match · ❌ {errores} errores · 🔵 {sin_cambio} dry-run")
 
-    if errores > 0:
+    # ========================================================
+    # ELIMINATORIAS (solo si el bracket ya está generado)
+    # ========================================================
+    elim_act = elim_no_match = elim_err = elim_dry = 0
+    elim_pendientes = fetch_elim_pendientes()
+    if elim_pendientes:
+        log(f"Partidos de eliminatoria pendientes en la BD: {len(elim_pendientes)}")
+        for ep in elim_pendientes:
+            eq = {ep["equipo_a"], ep["equipo_b"]}
+            # En eliminación directa, un par de equipos solo se enfrenta una vez,
+            # así que basta con matchear por equipos. Solo aceptamos un partido de
+            # ESPN que esté finalizado Y tenga un ganador definido.
+            espn_match = None
+            for m in api_matches:
+                if {m["equipo_local"], m["equipo_visitante"]} == eq and m.get("ganador"):
+                    espn_match = m; break
+            if not espn_match:
+                # Aún no se ha jugado (o ESPN no ha marcado ganador todavía). Normal.
+                elim_no_match += 1
+                continue
+            ganador = espn_match["ganador"]
+            if ganador not in eq:
+                log(f"   ⚠️  {ep['id']}: ganador de ESPN ({ganador}) no coincide con los equipos {eq}", "WARN")
+                elim_no_match += 1
+                continue
+            # Goles ordenados según equipo_a de NUESTRO partido (informativo)
+            if espn_match["equipo_local"] == ep["equipo_a"]:
+                ga, gb = espn_match["goles_local"], espn_match["goles_visitante"]
+            else:
+                ga, gb = espn_match["goles_visitante"], espn_match["goles_local"]
+
+            log(f"🏆 {ep['id']} ({ep['fase']}): pasa {ganador}  [{ep['equipo_a']} {ga}-{gb} {ep['equipo_b']}]")
+
+            if DRY_RUN:
+                elim_dry += 1
+                continue
+
+            ok, info = supabase_rpc("bot_set_resultado", {
+                "p_bot_key": BOT_KEY,
+                "p_partido_id": ep["id"],
+                "p_goles_a": ga,
+                "p_goles_b": gb,
+                "p_ganador": ganador,
+            })
+            if ok:
+                elim_act += 1
+            else:
+                elim_err += 1
+                log(f"   ❌ RPC error en {ep['id']}: {info}", "ERROR")
+        log(f"── Eliminatorias: ✅ {elim_act} actualizados · ⏳ {elim_no_match} aún no jugados · ❌ {elim_err} errores · 🔵 {elim_dry} dry-run")
+    else:
+        log("Eliminatorias: no hay partidos pendientes (bracket no generado o todos resueltos)")
+
+    log("─" * 50)
+    total_err = errores + elim_err
+    log(f"TOTAL: ✅ {actualizados + elim_act} resultados metidos · ❌ {total_err} errores")
+
+    if total_err > 0:
         sys.exit(2)
 
 

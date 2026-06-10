@@ -111,11 +111,14 @@ def cargar_partidos():
 # Obtener partidos finalizados de ESPN
 # ----------------------------------------
 def fetch_partidos_espn():
-    """Devuelve lista de partidos del Mundial finalizados en los últimos 7 días."""
+    """Devuelve lista de partidos del Mundial finalizados en los últimos 14 días."""
     finalizados = []
     hoy = datetime.now(timezone.utc).date()
-    # Pedimos los últimos 7 días para captar cualquier partido reciente
-    for dias_atras in range(7):
+    # Ventana de 14 días: si GitHub Actions fallara varios días seguidos, al
+    # volver el bot aún encuentra los partidos atrasados (con 7 días se
+    # perderían los más antiguos). El blindaje del parche 09 garantiza que
+    # re-procesar partidos ya resueltos no toca nada.
+    for dias_atras in range(14):
         fecha = hoy - timedelta(days=dias_atras)
         url = ESPN_URL + ESPN_URL_DATE_PARAM.format(ymd=fecha.strftime("%Y%m%d"))
         try:

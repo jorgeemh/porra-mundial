@@ -63,7 +63,11 @@
     let acumulado = [];
     while (true) {
       const { data, error } = await sb
-        .from("pronosticos").select("*")
+        .from("pronosticos")
+        // Solo las columnas que la página usa de verdad: reduce a menos de la
+        // mitad la transferencia (el free tier de Supabase tiene 5 GB/mes de
+        // egress y esta es la consulta más pesada de toda la web).
+        .select("id,usuario_id,partido_id,prediccion")
         .order("id")  // orden estable para que la paginación no repita ni salte filas
         .range(desde, desde + PAGE - 1);
       if (error) return { data: null, error };

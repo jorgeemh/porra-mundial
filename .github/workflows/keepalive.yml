@@ -1,0 +1,38 @@
+name: Keepalive Supabase
+
+# Supabase pausa los proyectos del plan gratuito tras ~7 días sin recibir
+# peticiones. Este workflow hace una lectura trivial (1 fila de config) dos
+# veces por semana para que el proyecto nunca se pause, aunque nadie visite
+# la web (p.ej. después del Mundial).
+#
+# No escribe nada: es un GET de solo lectura.
+
+on:
+  schedule:
+    # Lunes y jueves a las 08:17 UTC (hora rara para evitar picos de cron de GitHub)
+    - cron: "17 8 * * 1,4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping de lectura a Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          status=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/config?select=clave&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP $status"
+          cat /tmp/resp.json
+          if [ "$status" != "200" ]; then
+            echo "::error::El ping a Supabase falló con HTTP $status — revisa si el proyecto está pausado"
+            exit 1
+          fi
+          echo "✅ Supabase activo"

@@ -48,7 +48,10 @@
       </div>
 
       <p class="explicacion-nota" style="margin-top:14px">
-        <b>Desempate:</b> en caso de empate a puntos, gana quien tenga más aciertos totales. Si persiste el empate, orden alfabético.
+        <b>Desempate:</b> a igualdad de puntos, gana quien tenga (1) más aciertos totales,
+        (2) más premios acertados (goleador/MVP), (3) más aciertos en la fase más alta
+        (campeón → finalistas → semis → cuartos → octavos). Si dos personas empatan en
+        absolutamente todo, <b>comparten puesto</b> (verás un <code>=</code> junto al número).
       </p>
     `;
   })();
@@ -117,6 +120,9 @@
   const filas = usuarios.map(u => {
     const mis = pronPorUsuario[u.id] || [];
     let aciertos = 0, puntos = 0;
+    // Aciertos desglosados por fase (para el desempate "acertar lo difícil")
+    const acFase = { r32:0, r16:0, qf:0, sf:0, final:0 };
+    let premiosAcertados = 0;  // goleador + MVP acertados (para desempate)
     // Contar picks de grupos
     const picksGrupos = mis.filter(pr => partPorId[pr.partido_id]?.fase === "grupos").length;
     // Grupos: 1 punto por match correcto
@@ -143,6 +149,7 @@
       for (const eq of misPicksFase) if (ganadoresReales.has(eq)) n++;
       aciertos += n;
       puntos += n * puntosRonda[f];
+      acFase[f] = n;
     }
 
     // Premios: máximo goleador y MVP del torneo (15 puntos cada uno si aciertas)
@@ -154,20 +161,53 @@
       if (mi && mi.prediccion === part.resultado) {
         aciertos++;
         puntos += PUNTOS[tipo.toLowerCase()] || 0;
+        premiosAcertados++;
       }
     }
 
-    return { id: u.id, nombre: u.nombre, aciertos, puntos, picksGrupos };
+    return { id: u.id, nombre: u.nombre, aciertos, puntos, picksGrupos, premiosAcertados, acFase };
   });
 
-  filas.sort((a,b) => b.puntos - a.puntos || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
+  // ===== DESEMPATE EN CASCADA (combo completo, sin orden alfabético) =====
+  // 1º más puntos · 2º más aciertos · 3º más premios acertados (goleador/MVP, los más
+  // difíciles) · 4º acertar en la fase más alta (campeón > finalistas > semis > cuartos
+  // > octavos) · si empatan en TODO → comparten puesto (no se desempata por nombre).
+  filas.sort((a,b) =>
+    b.puntos - a.puntos
+    || b.aciertos - a.aciertos
+    || b.premiosAcertados - a.premiosAcertados
+    || b.acFase.final - a.acFase.final
+    || b.acFase.sf - a.acFase.sf
+    || b.acFase.qf - a.acFase.qf
+    || b.acFase.r16 - a.acFase.r16
+    || b.acFase.r32 - a.acFase.r32
+    || 0  // empate real: se quedan juntos y compartirán puesto en el render
+  );
 
-  $("#tabla-body").innerHTML = filas.map((f,i) => {
+  // Asignar puesto con EMPATES COMPARTIDOS: dos filas idénticas en todos los criterios
+  // de desempate comparten número (p.ej. dos "5º" y el siguiente es "7º").
+  const claveEmpate = f => [f.puntos, f.aciertos, f.premiosAcertados,
+    f.acFase.final, f.acFase.sf, f.acFase.qf, f.acFase.r16, f.acFase.r32].join("|");
+  let prevClave = null, puestoActual = 0;
+  filas.forEach((f, i) => {
+    const c = claveEmpate(f);
+    if (c !== prevClave) { puestoActual = i + 1; prevClave = c; }
+    f.puesto = puestoActual;
+    f.empatado = false;  // se marca abajo
+  });
+  // Marcar qué puestos están compartidos (para mostrar "=" o similar)
+  const conteoPuesto = {};
+  filas.forEach(f => { conteoPuesto[f.puesto] = (conteoPuesto[f.puesto] || 0) + 1; });
+  filas.forEach(f => { f.empatado = conteoPuesto[f.puesto] > 1; });
+
+  $("#tabla-body").innerHTML = filas.map(f => {
     const completo = f.picksGrupos === totalGrupos && totalGrupos > 0;
     const picksCell = `<span class="picks-cell ${completo ? 'completo' : ''}">${f.picksGrupos}<span class="picks-sep">/</span>${totalGrupos}</span>`;
+    // Puesto con empates compartidos: "5º" o "5º=" si lo comparte con alguien
+    const puestoCell = f.empatado ? `${f.puesto}<span class="puesto-empate" title="Empate: comparten puesto">=</span>` : `${f.puesto}`;
     return `
       <tr ${f.id===sesion.id?'class="yo"':''}>
-        <td>${i+1}</td><td>${f.nombre}</td><td>${picksCell}</td><td>${f.aciertos}</td><td><b>${f.puntos}</b></td>
+        <td>${puestoCell}</td><td>${f.nombre}</td><td>${picksCell}</td><td>${f.aciertos}</td><td><b>${f.puntos}</b></td>
       </tr>`;
   }).join("") || "<tr><td colspan='5'>Sin participantes aún</td></tr>";
 

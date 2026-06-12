@@ -468,6 +468,12 @@ table { width: 100%; border-collapse: collapse; }
 }
 .picks-cell.completo::after { content: " ✓"; font-weight: 700; }
 
+/* Indicador de puesto compartido (empate total) en clasificación */
+.puesto-empate {
+  color: var(--text-faint); font-weight: 700; margin-left: 1px;
+  font-size: .85em;
+}
+
 /* ---------- BOTONES FLOTANTES ---------- */
 .botones-flotantes {
   position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);

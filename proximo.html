@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cuadro · Porra Mundial 2026</title>
+<title>Próximo partido · Porra Mundial 2026</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="theme-color" content="#ec4899">
 <link rel="stylesheet" href="css/styles.css">
@@ -14,9 +14,9 @@
     <span id="usuario-nombre"></span>
     <nav>
       <a href="pronosticos.html">Pronósticos</a>
-      <a href="proximo.html">Próximo</a>
+      <a href="proximo.html" class="activo">Próximo</a>
       <a href="grupos.html">Grupos</a>
-      <a href="cuadro.html" class="activo">Cuadro</a>
+      <a href="cuadro.html">Cuadro</a>
       <a href="clasificacion.html">Clasificación</a>
       <a href="admin.html" id="link-admin" style="display:none">Admin</a>
       <a href="#" id="btn-salir">Salir</a>
@@ -24,13 +24,11 @@
   </div>
 </header>
 
-<main class="container container-ancho">
-  <h2 style="text-align:center; margin-bottom:8px">🏆 Cuadro eliminatorio</h2>
+<main class="container">
+  <h2 style="text-align:center; margin-bottom:8px">⏭️ Próximo partido</h2>
   <p class="sub" id="estado" style="text-align:center"></p>
-  <div id="aviso" class="error" style="display:none"></div>
-  <div class="bracket-wrap">
-    <div class="bracket" id="bracket"></div>
-  </div>
+  <div id="error" class="error" style="display:none"></div>
+  <div id="contenido"></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -38,6 +36,6 @@
 <script src="js/supabase.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/teams.js"></script>
-<script src="js/cuadro.js"></script>
+<script src="js/proximo.js"></script>
 </body>
 </html>

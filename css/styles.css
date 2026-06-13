@@ -788,3 +788,77 @@ details summary span.contador {
   .opciones .op, .opciones-elim .op { font-size: .75rem; padding: 9px 4px; }
   .topbar nav a { padding: 5px 10px; font-size: .8rem; }
 }
+
+/* ---------- PRÓXIMO PARTIDO ---------- */
+.prox-cab { text-align: center; }
+.prox-equipos {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+}
+.prox-equipo {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-weight: 700; font-size: 1.05rem; flex: 1; max-width: 200px;
+}
+.prox-flag { font-size: 2.6rem; line-height: 1; }
+.prox-vs { color: var(--text-faint); font-weight: 700; font-size: .9rem; }
+
+/* Colores de cada opción (consistentes en barra, leyenda y columnas) */
+.op-a    { --op-color: #10b981; }   /* equipo A / local — verde */
+.op-x    { --op-color: #f59e0b; }   /* empate — ámbar */
+.op-b    { --op-color: #6366f1; }   /* equipo B / visitante — índigo */
+.op-otro { --op-color: #94a3b8; }   /* otro (eliminatorias) — gris */
+
+/* Barra de porcentajes (slider segmentado) */
+.prox-barra {
+  display: flex; height: 26px; border-radius: 999px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.barra-seg {
+  height: 100%; background: var(--op-color);
+  transition: width .5s ease;
+  min-width: 0;
+}
+.barra-seg.op-a { background: #10b981; }
+.barra-seg.op-x { background: #f59e0b; }
+.barra-seg.op-b { background: #6366f1; }
+.barra-seg.op-otro { background: #94a3b8; }
+
+.prox-leyenda {
+  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px;
+  justify-content: center;
+}
+.prox-leyenda-item { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-dim); }
+.prox-leyenda-item b { color: var(--text); font-variant-numeric: tabular-nums; }
+.prox-leyenda-n { color: var(--text-faint); font-size: .8rem; }
+.prox-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; background: var(--op-color); }
+.prox-dot.op-a { background: #10b981; }
+.prox-dot.op-x { background: #f59e0b; }
+.prox-dot.op-b { background: #6366f1; }
+.prox-dot.op-otro { background: #94a3b8; }
+
+/* Columnas de "quién apostó qué" */
+.prox-cols {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;
+}
+.prox-col {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.prox-col-cab {
+  padding: 10px 12px; font-size: .82rem; font-weight: 700; color: #fff;
+  background: var(--op-color);
+}
+.prox-col-cab.op-a { background: #10b981; }
+.prox-col-cab.op-x { background: #f59e0b; }
+.prox-col-cab.op-b { background: #6366f1; }
+.prox-col-cab.op-otro { background: #94a3b8; }
+.prox-col-cab b { font-variant-numeric: tabular-nums; }
+.prox-col-lista { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.prox-nombre { font-size: .88rem; color: var(--text); padding: 3px 0; }
+.prox-nombre.yo { font-weight: 700; color: var(--primary); }
+.prox-vacio { font-size: .82rem; color: var(--text-faint); font-style: italic; }
+
+@media (max-width: 480px) {
+  .prox-flag { font-size: 2rem; }
+  .prox-equipo { font-size: .92rem; }
+  .prox-equipos { gap: 10px; }
+}

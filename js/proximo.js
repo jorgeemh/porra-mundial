@@ -20,10 +20,19 @@
   const totalUsuarios = usuariosRes.data.length;
 
   // ---- Determinar el PRÓXIMO partido ----
-  // Criterio: el partido sin resultado, con ambos equipos definidos, de fecha más temprana.
-  // (Cubre tanto "el que está por empezar" como "el que se está jugando ahora".)
+  // Criterio: el partido sin resultado de fecha más temprana QUE TODAVÍA NO HAYA TERMINADO.
+  // IMPORTANTE: un partido puede no tener resultado por dos motivos:
+  //   (a) aún no se ha jugado (futuro)  → sí es candidato a "próximo"
+  //   (b) ya se jugó pero el bot va con retraso y no le ha puesto el resultado → NO es el
+  //       próximo, pero hay que excluirlo o lo mostraríamos por error.
+  // Para distinguirlos: un partido "sigue vigente" si su inicio fue hace menos de 3h
+  // (cubre los 90 min + descanso/añadido, e incluso prórroga+penaltis en eliminatorias).
+  // Así, un partido en juego AHORA cuenta como próximo, pero uno acabado hace horas no.
+  const ahoraMs = Date.now();
+  const MARGEN_VIGENTE_MS = 3 * 60 * 60 * 1000;  // 3 horas
   const candidatos = partidos
     .filter(p => !p.resultado && p.equipo_a && p.equipo_b && p.fecha_hora && p.fase !== "premio")
+    .filter(p => new Date(p.fecha_hora).getTime() + MARGEN_VIGENTE_MS > ahoraMs)
     .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
 
   if (candidatos.length === 0) {

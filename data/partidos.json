@@ -38,7 +38,7 @@
     {"id":"G_C_6","grupo":"C","equipo_a":"MAR","equipo_b":"HAI","fecha_hora":"2026-06-25T00:00:00+02:00"},
 
     {"id":"G_D_1","grupo":"D","equipo_a":"USA","equipo_b":"PAR","fecha_hora":"2026-06-13T03:00:00+02:00"},
-    {"id":"G_D_2","grupo":"D","equipo_a":"AUS","equipo_b":"TUR","fecha_hora":"2026-06-13T06:00:00+02:00"},
+    {"id":"G_D_2","grupo":"D","equipo_a":"AUS","equipo_b":"TUR","fecha_hora":"2026-06-14T06:00:00+02:00"},
     {"id":"G_D_3","grupo":"D","equipo_a":"USA","equipo_b":"AUS","fecha_hora":"2026-06-19T21:00:00+02:00"},
     {"id":"G_D_4","grupo":"D","equipo_a":"TUR","equipo_b":"PAR","fecha_hora":"2026-06-20T05:00:00+02:00"},
     {"id":"G_D_5","grupo":"D","equipo_a":"TUR","equipo_b":"USA","fecha_hora":"2026-06-26T04:00:00+02:00"},
@@ -53,7 +53,7 @@
 
     {"id":"G_F_1","grupo":"F","equipo_a":"NED","equipo_b":"JPN","fecha_hora":"2026-06-14T22:00:00+02:00"},
     {"id":"G_F_2","grupo":"F","equipo_a":"SWE","equipo_b":"TUN","fecha_hora":"2026-06-15T04:00:00+02:00"},
-    {"id":"G_F_3","grupo":"F","equipo_a":"TUN","equipo_b":"JPN","fecha_hora":"2026-06-20T06:00:00+02:00"},
+    {"id":"G_F_3","grupo":"F","equipo_a":"TUN","equipo_b":"JPN","fecha_hora":"2026-06-21T06:00:00+02:00"},
     {"id":"G_F_4","grupo":"F","equipo_a":"NED","equipo_b":"SWE","fecha_hora":"2026-06-20T19:00:00+02:00"},
     {"id":"G_F_5","grupo":"F","equipo_a":"TUN","equipo_b":"NED","fecha_hora":"2026-06-26T01:00:00+02:00"},
     {"id":"G_F_6","grupo":"F","equipo_a":"JPN","equipo_b":"SWE","fecha_hora":"2026-06-26T01:00:00+02:00"},
@@ -79,7 +79,7 @@
     {"id":"G_I_5","grupo":"I","equipo_a":"NOR","equipo_b":"FRA","fecha_hora":"2026-06-26T21:00:00+02:00"},
     {"id":"G_I_6","grupo":"I","equipo_a":"SEN","equipo_b":"IRQ","fecha_hora":"2026-06-26T21:00:00+02:00"},
 
-    {"id":"G_J_1","grupo":"J","equipo_a":"AUT","equipo_b":"JOR","fecha_hora":"2026-06-16T06:00:00+02:00"},
+    {"id":"G_J_1","grupo":"J","equipo_a":"AUT","equipo_b":"JOR","fecha_hora":"2026-06-17T06:00:00+02:00"},
     {"id":"G_J_2","grupo":"J","equipo_a":"ARG","equipo_b":"ALG","fecha_hora":"2026-06-17T03:00:00+02:00"},
     {"id":"G_J_3","grupo":"J","equipo_a":"ARG","equipo_b":"AUT","fecha_hora":"2026-06-22T19:00:00+02:00"},
     {"id":"G_J_4","grupo":"J","equipo_a":"JOR","equipo_b":"ALG","fecha_hora":"2026-06-23T05:00:00+02:00"},

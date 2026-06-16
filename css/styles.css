@@ -453,6 +453,25 @@ table { width: 100%; border-collapse: collapse; }
 .tabla-clasif tr:hover { background: var(--surface-2); }
 .tabla-clasif td:first-child { font-weight: 700; color: var(--primary); }
 
+/* Red de seguridad: si la tabla no cabe, se desliza en horizontal (igual que el cuadro) */
+.tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* En móvil, ajustar para que las 5 columnas quepan sin deslizar */
+@media (max-width: 480px) {
+  .tabla-clasif { font-size: .82rem; }
+  .tabla-clasif th, .tabla-clasif td { padding: 10px 4px; }
+  .tabla-clasif th { font-size: .62rem; letter-spacing: .02em; }
+  /* puesto y columnas numéricas: lo más estrechas posible */
+  .tabla-clasif th:first-child, .tabla-clasif td:first-child { width: 1%; white-space: nowrap; }
+  .tabla-clasif th:nth-child(n+3), .tabla-clasif td:nth-child(n+3) {
+    width: 1%; white-space: nowrap; text-align: center;
+  }
+  /* el nombre se queda con el espacio sobrante y los muy largos se parten */
+  .tabla-clasif td:nth-child(2) { overflow-wrap: anywhere; word-break: break-word; }
+  /* píldora de picks más compacta para que no infle su columna */
+  .tabla-clasif .picks-cell { padding: 2px 6px; font-size: .76rem; }
+}
+
 /* Celda de picks (X/72) */
 .picks-cell {
   display: inline-flex; align-items: baseline; gap: 1px;

@@ -874,7 +874,24 @@ details summary span.contador {
 .prox-col-lista { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 .prox-nombre { font-size: .88rem; color: var(--text); padding: 3px 0; }
 .prox-nombre.yo { font-weight: 700; color: var(--primary); }
+.prox-nombre.acerto::after { content: " ✓"; color: #10b981; font-weight: 700; }
 .prox-vacio { font-size: .82rem; color: var(--text-faint); font-style: italic; }
+
+/* Navegación entre partidos (◀ anterior / siguiente ▶) */
+.prox-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.prox-nav button { padding: 10px 16px; font-size: .9rem; }
+.prox-nav-pos { font-size: .82rem; color: var(--text-faint); font-variant-numeric: tabular-nums; font-weight: 600; flex-shrink: 0; }
+
+/* Marcador de un partido jugado */
+.prox-marcador { font-size: 1.8rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+.prox-marcador .prox-guion { color: var(--text-faint); margin: 0 6px; font-weight: 600; }
+.prox-equipo.gana { color: #059669; }
+.prox-equipo.gana span:last-child { font-weight: 800; }
+
+/* Columna ganadora + marcas de acierto/fallo */
+.prox-col-cab.ganadora { box-shadow: 0 0 0 2px #10b981, 0 4px 12px rgba(16,185,129,.3); }
+.prox-ok { color: #059669; font-weight: 700; }
+.prox-ko { color: #dc2626; font-weight: 700; }
 
 @media (max-width: 480px) {
   .prox-flag { font-size: 2rem; }
